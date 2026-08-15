@@ -1,0 +1,121 @@
+Personal Learning License 1.0
+
+Copyright (c) 2026 embodied-paper-deep-read contributors
+All rights reserved except as expressly granted below.
+
+1. Acceptance
+
+By copying, installing, running, modifying, or otherwise using any part of this
+software, documentation, scripts, configuration, or other materials in this
+repository (collectively, the "Software"), you agree to this License.
+
+2. Personal Learning License Grant
+
+Subject to this License, the copyright holder grants you a limited,
+non-exclusive, worldwide, royalty-free, non-transferable, and non-sublicensable
+license to:
+
+(a) download and make copies of the Software for your own personal use;
+(b) install and run the Software for personal learning, self-education,
+    private research, private experimentation, or hobby purposes; and
+(c) modify the Software privately for those same purposes.
+
+This grant is available only to natural persons acting solely in their
+individual capacity and without any anticipated commercial application or
+organizational benefit.
+
+3. No Commercial or Organizational Use
+
+You may not use the Software, directly or indirectly:
+
+(a) for commercial, professional, employment-related, or revenue-generating
+    purposes;
+(b) on behalf of, for the benefit of, or within the operations of any company,
+    employer, client, partnership, government body, educational institution,
+    nonprofit organization, research organization, or other legal entity;
+(c) in any paid product, service, consulting engagement, hosted service,
+    software-as-a-service offering, commercial workflow, or internal business
+    process;
+(d) to create or support paid courses, paid publications, sponsored content,
+    monetized media, commercial datasets, commercial model training, or any
+    other offering for which money, services, business advantage, or other
+    consideration is received or expected;
+(e) as part of a product or service that is sold, licensed, rented, subscribed
+    to, advertised, or otherwise commercially exploited; or
+(f) for evaluation, testing, or research intended to inform a present or
+    planned commercial or organizational application.
+
+"Commercial use" includes both direct and indirect commercial advantage,
+whether or not the Software itself is sold and whether or not the activity
+earns a profit.
+
+4. No Distribution or Public Derivatives
+
+You may not publish, redistribute, sublicense, sell, rent, lease, host, mirror,
+or otherwise provide the Software or any modified version of it to another
+person or entity. You may not remove or alter copyright, attribution, or
+license notices.
+
+You may link to the copyright holder's original authorized repository, but this
+does not grant permission to host or distribute a copy elsewhere.
+
+5. Inputs and Outputs
+
+This License does not claim ownership of your original paper files, prompts,
+notes, or other input materials. Subject to third-party rights, you retain any
+rights you may have in original output content that you create.
+
+However, using the Software to create an output as part of a prohibited
+commercial or organizational activity remains a violation of this License.
+
+6. Third-Party Materials and Services
+
+Third-party libraries, command-line tools, APIs, papers, figures, and services
+used with or referenced by the Software remain subject to their own licenses,
+terms, and privacy policies. This License grants no rights in those materials
+or services.
+
+7. No Trademark Rights
+
+This License does not grant permission to use any contributor's name, logo,
+trade name, trademark, or service mark except as necessary for truthful
+attribution.
+
+8. Termination
+
+Your rights under this License terminate automatically if you violate any term.
+If the copyright holder gives you written notice of a first violation, your
+rights may be reinstated only if you stop the violation, delete all
+unauthorized copies, and fully correct the violation within 30 days. Repeated,
+willful, or commercial violations are not subject to automatic reinstatement.
+
+Upon termination, you must stop using the Software and delete all copies and
+modified versions in your possession or control.
+
+9. Commercial Licensing
+
+No commercial rights are granted by this License. A separate written license
+from the copyright holder is required for any commercial or organizational
+use. The copyright holder is not obligated to offer such a license.
+
+10. Disclaimer of Warranty
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS" AND
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND
+NON-INFRINGEMENT. YOU USE THE SOFTWARE AT YOUR OWN RISK.
+
+11. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE COPYRIGHT HOLDER AND CONTRIBUTORS
+WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+CONSEQUENTIAL, OR OTHER DAMAGES ARISING FROM OR RELATED TO THE SOFTWARE OR THIS
+LICENSE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+12. No Other Rights
+
+All rights not expressly granted by this License are reserved. Fair use, fair
+dealing, and other rights or exceptions provided by applicable law are not
+restricted by this License.
+
+SPDX-License-Identifier: LicenseRef-Personal-Learning-1.0

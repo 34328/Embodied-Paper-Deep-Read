@@ -1,0 +1,4 @@
+interface:
+  display_name: "Embodied Paper Deep Read"
+  short_description: "Deep-read embodied-AI papers into Feishu notes"
+  default_prompt: "Use $embodied-paper-deep-read to analyze this embodied-AI paper and publish a Chinese study note to my Feishu documents."

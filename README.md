@@ -68,13 +68,17 @@ Use embodied-paper-deep-read to deep-read this paper and publish a Chinese study
 
 MinerU 是第三方 PDF 解析服务，能显著提升复杂公式、表格和原图的抽取质量。**不配也能用**——skill 会退回本地 PyMuPDF 页级索引，只是质量下降。
 
-在 [MinerU](https://mineru.net/doc/docs/index_en/) 个人中心申请 Precision Extract API Token，然后：
+到 **[mineru.net/apiManage/token](https://mineru.net/apiManage/token)** 登录后创建一个 API Token，然后：
 
 ```bash
 bash install.sh --set-token
 ```
 
-隐藏输入，写入 `~/.mineru_token`（权限 600）。也可以改用 `MINERU_TOKEN` 环境变量，环境变量优先。Token 有有效期，返回 401 时重跑一次上面的命令即可。
+隐藏输入，写入 `~/.mineru_token`（权限 600）。也可以改用 `MINERU_TOKEN` 环境变量，环境变量优先。Token 有效期 90 天，返回 401 时重新申请一个、重跑一次上面的命令即可。
+
+> ⚠️ MinerU 是国内服务，**开着 VPN / 代理打不开这个页面**，申请前先关掉。后续调用接口同理。
+
+接口细节和配额见 [API 文档](https://mineru.net/apiManage/docs)。
 
 **隐私边界**：使用 MinerU 会把完整 PDF 上传给第三方。公开的 arXiv 论文默认可以用；**你自己的未发表稿件、在审论文、内部资料，skill 必须先征得你明确同意才会上传**，你也可以直接要求走纯本地流程。脚本不会关闭 TLS 校验，不会读取仓库内的 token 文件，也不会把 token 写进日志或输出文档。
 
@@ -87,7 +91,8 @@ bash install.sh --set-token
 | `could not create .venv` | Debian/Ubuntu 缺 venv 模块 | `sudo apt install python3-venv` 后重跑 |
 | `PyMuPDF is not available for this interpreter` | conda / 多 Python 环境切换了解释器 | 重跑 `bash install.sh`；脚本此后会自动切回正确的解释器 |
 | `MINERU_TOKEN is not set and ~/.mineru_token does not exist` | 没配 MinerU | `bash install.sh --set-token`，或不配（走本地解析） |
-| MinerU 返回 `401` | token 过期或无效 | 重新申请后 `bash install.sh --set-token` |
+| MinerU 返回 `401` | token 过期（有效期 90 天）或无效 | 到 [申请页](https://mineru.net/apiManage/token) 重新申请后 `bash install.sh --set-token` |
+| MinerU 页面打不开 / 请求超时 | 开着 VPN 或代理 | 关掉代理再试，MinerU 是国内服务 |
 | lark-cli 报 `unsafe file path` | 传了绝对路径的 `@file` | `cd` 到图片目录，改用 `./fig.png` 这样的相对路径 |
 | 发布飞书时提示未登录 / 无权限 | 还没配过飞书 | 对 agent 说「帮我配置飞书发布」，按它给的链接授权 |
 | `python3 not found` / 版本过低 | 需要 Python 3.9+ | 装一个新版 Python 后重跑安装 |

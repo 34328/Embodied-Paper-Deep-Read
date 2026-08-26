@@ -44,7 +44,8 @@ if [[ -z "${MINERU_TOKEN:-}" ]]; then
   printf 'MINERU_TOKEN is not set and ~/.mineru_token does not exist.\n' >&2
   printf 'Store a token once with:  bash install.sh --set-token\n' >&2
   printf 'or export MINERU_TOKEN in the shell that starts your agent.\n' >&2
-  printf 'Create the token in your MinerU account: https://mineru.net/doc/docs/index_en/\n' >&2
+  printf 'Create a token at: https://mineru.net/apiManage/token\n' >&2
+  printf '(MinerU is a China-hosted service; turn off any VPN/proxy to reach it.)\n' >&2
   printf 'Do not paste the token into chat or commit it.\n' >&2
   exit 2
 fi

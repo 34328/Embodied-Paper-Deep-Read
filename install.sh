@@ -80,6 +80,8 @@ set_token() {
       *) say "kept the existing token"; return 0 ;;
     esac
   fi
+  say "Create one at https://mineru.net/apiManage/token"
+  say "(China-hosted; turn off any VPN/proxy to reach it.)"
   printf '  Paste your MinerU API token (input hidden): '
   read -r -s token
   printf '\n'
@@ -91,7 +93,7 @@ set_token() {
   ( umask 077; printf '%s\n' "$token" > "$TOKEN_FILE" )
   chmod 600 "$TOKEN_FILE"
   ok "wrote $TOKEN_FILE (mode 600)"
-  say "Tokens expire; re-run this command when MinerU returns 401."
+  say "Tokens last 90 days; re-run this command when MinerU returns 401."
 }
 
 # ---------------------------------------------------------------- targets

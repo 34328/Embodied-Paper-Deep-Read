@@ -34,15 +34,22 @@ Check state first — skip every step that already passes:
 command -v lark-cli && lark-cli auth status --json --verify
 ```
 
-**The authority is the vendor's own agent guide**, not this file — flags change:
-`https://github.com/larksuite/cli` → "Quick Start (AI Agent)". Fetch
-`https://raw.githubusercontent.com/larksuite/cli/master/README.md` if the rendered page is
-awkward to read. Its four steps are install (`npx @larksuite/cli@latest install`), configure
-(`lark-cli config init --new`), login, then verify (`lark-cli auth status`).
+**The authority is Feishu's own agent-facing install guide**, not this file — flags change:
+
+```
+https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md
+```
+
+That URL is raw Markdown, written for agents; fetch and follow it. Its four steps are install
+(`npm install -g @larksuite/cli`, **plus** `npx -y skills add https://open.feishu.cn --skill -y`,
+which the guide marks required), configure (`lark-cli config init --new`), login, and verify
+(`lark-cli auth status`). The `larksuite/cli` GitHub README has a parallel "Quick Start
+(AI Agent)" section, but its install commands differ — prefer the guide above, which is what
+the official CLI page hands users.
 
 Four things that guide will not tell you, specific to this skill:
 
-- **Scope it to publishing.** The official quick start uses `auth login --recommend`. Prefer
+- **Scope it to publishing.** The guide's step 3 uses `auth login --recommend`. Prefer
   `lark-cli auth login --domain docs --domain drive` — this skill only writes documents and
   uploads images, so do not request the wider recommended set.
 - **`config init` and `auth login` both block on a browser.** Run them in the background and

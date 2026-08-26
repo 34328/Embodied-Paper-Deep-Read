@@ -50,18 +50,19 @@ Use embodied-paper-deep-read to deep-read this paper and publish a Chinese study
 
 ## 可选：发布到飞书
 
-默认发布后端是飞书。**不需要你自己装** —— 把下面这句丢给 agent：
+默认发布后端是飞书。**不需要你自己装** —— 把飞书官方给的这句话丢给 agent：
 
 ```text
-按 https://github.com/larksuite/cli 里 "Quick Start (AI Agent)" 一节的步骤，
-帮我安装并配置飞书 CLI，授权范围只要 Docs 和 Drive，最后验证一下装好没有。
+帮我安装飞书 CLI：https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md
 ```
 
-飞书官方仓库专门写了给 AI Agent 的安装章节，agent 照着走就行：装 `@larksuite/cli`、创建应用、登录授权、验证。装过 skill 之后，直接说「帮我配置飞书发布」也可以，效果一样。
+这句提示词来自[飞书 CLI 官网](https://www.feishu.cn/feishu-cli)，链接本身就是一份写给 AI Agent 的安装指南（`.md` 后缀可被 agent 直接抓取）。agent 照着走完四步：装 `@larksuite/cli` 和配套 SKILL、创建应用、登录授权、验证。
 
-全程只有一件事必须你本人做：**在浏览器里点授权**。agent 会把验证链接发给你，你确认后它自动继续。
+装好之后说「帮我配置飞书发布」，本 skill 会把授权范围收到只要 Docs 和 Drive —— 发论文文档用不上更多权限。
 
-前提是机器上有 Node.js（提供 `npx`）；没有的话 agent 会告诉你怎么装。不想用飞书，就在提示词里要求「输出本地 Markdown」，这一节完全可以跳过。
+全程只有一件事必须你本人做：**在浏览器里点授权**。agent 会把授权链接发给你，你确认后它自动继续。
+
+前提是机器上有 Node.js（提供 `npm`/`npx`）。不想用飞书，就在提示词里要求「输出本地 Markdown」，这一节完全可以跳过。
 
 ## 可选：配置 MinerU
 

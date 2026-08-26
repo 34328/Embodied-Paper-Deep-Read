@@ -28,28 +28,34 @@ unauthorized, **drive the setup yourself**; do not paste a list of commands and 
 to run them. Only two things genuinely need the user: approving an install, and the browser
 authorization itself.
 
-Check state first — skip any step that already passes:
+Check state first — skip every step that already passes:
 
 ```bash
 command -v lark-cli && lark-cli auth status --json --verify
 ```
 
-1. **Install** if `lark-cli` is absent: `npx @larksuite/cli@latest install` (needs Node.js 16+;
-   if Node is missing, tell the user how to install it for their OS and stop there).
-2. **Configure** if there is no app yet: `lark-cli config init --new`. This **blocks until the
-   user finishes in the browser** — run it in the background and read the verification URL from
-   its output. Inside an agent workspace (`OPENCLAW_HOME`/`HERMES_HOME` set) it refuses by
-   design; use `lark-cli config bind` to bind the agent's existing app instead of creating a
-   parallel one.
-3. **Authorize** the minimum Docs/Drive scopes:
-   `lark-cli auth login --domain docs --domain drive`. This also blocks on the browser. If your
-   harness only delivers messages at end of turn, use `--no-wait --json`, give the user the
-   verification URL (or `lark-cli auth qrcode`) as your final message, end the turn, then
-   finish with `--device-code <code>` after they confirm.
-4. **Verify** with `lark-cli auth status --json --verify` before publishing anything.
+**The authority is the vendor's own agent guide**, not this file — flags change:
+`https://github.com/larksuite/cli` → "Quick Start (AI Agent)". Fetch
+`https://raw.githubusercontent.com/larksuite/cli/master/README.md` if the rendered page is
+awkward to read. Its four steps are install (`npx @larksuite/cli@latest install`), configure
+(`lark-cli config init --new`), login, then verify (`lark-cli auth status`).
 
-Request the minimum scopes needed to publish. Never ask the user to paste an app secret into
-chat; `config init` takes it via `--app-secret-stdin`.
+Four things that guide will not tell you, specific to this skill:
+
+- **Scope it to publishing.** The official quick start uses `auth login --recommend`. Prefer
+  `lark-cli auth login --domain docs --domain drive` — this skill only writes documents and
+  uploads images, so do not request the wider recommended set.
+- **`config init` and `auth login` both block on a browser.** Run them in the background and
+  read the verification URL out of their output. If your harness only delivers messages at end
+  of turn, use `auth login --no-wait --json`, send the user the URL (or `lark-cli auth qrcode`)
+  as your final message, end the turn, and finish with `--device-code <code>` afterwards.
+- **Inside an agent workspace** (`OPENCLAW_HOME`/`HERMES_HOME` set) `config init` refuses by
+  design. Use `lark-cli config bind` to bind the agent's existing app rather than creating a
+  parallel one; `--force-init` only if the user explicitly wants a separate app.
+- **Never take an app secret through chat.** `config init` reads it via `--app-secret-stdin`.
+
+If Node.js is missing, say how to install it for the user's OS and stop there — do not install
+a runtime unasked.
 
 **MUST read the version-matched embedded skill before writing** — do not rely on this
 file for exact command flags, they can change:

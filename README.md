@@ -50,18 +50,17 @@ Use embodied-paper-deep-read to deep-read this paper and publish a Chinese study
 
 ## 可选：发布到飞书
 
-默认发布后端是飞书，需要飞书官方的 [`@larksuite/cli`](https://github.com/larksuite/cli)（Node.js 16+）。**首次要发布时再配也来得及**，不影响前面的安装。
+默认发布后端是飞书。**不需要你自己装** —— 直接让 agent 去配：
 
-```bash
-npx @larksuite/cli@latest install
-lark-cli config init
-lark-cli auth login --domain docs --domain drive
-lark-cli auth status --json --verify
+```text
+帮我配置飞书发布
 ```
 
-`config init` 和 `auth login` 会引导你在浏览器里完成飞书应用配置与授权。按最小权限原则，只授权 Docs 和 Drive。
+它会检查现状、装上飞书官方的 [`@larksuite/cli`](https://github.com/larksuite/cli)、创建应用、申请最小权限（只要 Docs 和 Drive）并验证。
 
-不想装飞书 CLI，就在提示词里要求「输出本地 Markdown」。
+全程只有一件事必须你本人做：**在浏览器里点授权**。agent 会把验证链接或二维码发给你，你确认后它继续。
+
+前提是机器上有 Node.js 16+；没有的话 agent 会告诉你怎么装。不想用飞书，就在提示词里要求「输出本地 Markdown」，这条完全可以跳过。
 
 ## 可选：配置 MinerU
 
@@ -88,6 +87,7 @@ bash install.sh --set-token
 | `MINERU_TOKEN is not set and ~/.mineru_token does not exist` | 没配 MinerU | `bash install.sh --set-token`，或不配（走本地解析） |
 | MinerU 返回 `401` | token 过期或无效 | 重新申请后 `bash install.sh --set-token` |
 | lark-cli 报 `unsafe file path` | 传了绝对路径的 `@file` | `cd` 到图片目录，改用 `./fig.png` 这样的相对路径 |
+| 发布飞书时提示未登录 / 无权限 | 还没配过飞书 | 对 agent 说「帮我配置飞书发布」，按它给的链接授权 |
 | `python3 not found` / 版本过低 | 需要 Python 3.9+ | 装一个新版 Python 后重跑安装 |
 
 ## 开发

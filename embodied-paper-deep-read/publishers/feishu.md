@@ -17,12 +17,39 @@ fulfills this contract; nothing in phases 1–3 should change.
 
 **Environment**
 - Require the official `@larksuite/cli`; do not assume a platform-specific installation path.
-- Follow the repository README for installation. Configure once with `lark-cli config init`,
-  authorize the minimum required Docs/Drive scopes with `lark-cli auth login`, and verify with
-  `lark-cli auth status --json --verify`.
 - Publish as the user so the document lands in the user's own Feishu library.
 - `@file` arguments accept **cwd-relative paths only** (absolute → "unsafe file path").
   `cd` into the figure dir, or pass relative `./fig.png`.
+
+## First-time setup — you run it, not the user
+
+The README tells the user to ask you to set Feishu up. So when `lark-cli` is missing or
+unauthorized, **drive the setup yourself**; do not paste a list of commands and tell the user
+to run them. Only two things genuinely need the user: approving an install, and the browser
+authorization itself.
+
+Check state first — skip any step that already passes:
+
+```bash
+command -v lark-cli && lark-cli auth status --json --verify
+```
+
+1. **Install** if `lark-cli` is absent: `npx @larksuite/cli@latest install` (needs Node.js 16+;
+   if Node is missing, tell the user how to install it for their OS and stop there).
+2. **Configure** if there is no app yet: `lark-cli config init --new`. This **blocks until the
+   user finishes in the browser** — run it in the background and read the verification URL from
+   its output. Inside an agent workspace (`OPENCLAW_HOME`/`HERMES_HOME` set) it refuses by
+   design; use `lark-cli config bind` to bind the agent's existing app instead of creating a
+   parallel one.
+3. **Authorize** the minimum Docs/Drive scopes:
+   `lark-cli auth login --domain docs --domain drive`. This also blocks on the browser. If your
+   harness only delivers messages at end of turn, use `--no-wait --json`, give the user the
+   verification URL (or `lark-cli auth qrcode`) as your final message, end the turn, then
+   finish with `--device-code <code>` after they confirm.
+4. **Verify** with `lark-cli auth status --json --verify` before publishing anything.
+
+Request the minimum scopes needed to publish. Never ask the user to paste an app secret into
+chat; `config init` takes it via `--app-secret-stdin`.
 
 **MUST read the version-matched embedded skill before writing** — do not rely on this
 file for exact command flags, they can change:
@@ -32,7 +59,8 @@ lark-cli skills read lark-doc
 and the references it names: `references/lark-doc-fetch.md`,
 `references/lark-doc-media-insert.md` (or `+media-insert --help`),
 `references/lark-doc-update.md`. This skill's job is the *workflow*; lark-doc is the
-*command reference*.
+*command reference*. `lark-cli --help` and each subcommand's `--help` carry their own
+agent-driving notes; prefer them over this file when they disagree.
 
 ## Publish workflow
 

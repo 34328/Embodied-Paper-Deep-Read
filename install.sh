@@ -285,7 +285,8 @@ status() {
   if command -v lark-cli >/dev/null 2>&1; then
     ok "lark-cli: $(command -v lark-cli)"
   else
-    warn "lark-cli: not installed (needed only to publish to Feishu) — see README.md"
+    warn "lark-cli: not installed (only needed to publish to Feishu)"
+    say "  ask your agent: 帮我配置飞书发布"
   fi
 }
 

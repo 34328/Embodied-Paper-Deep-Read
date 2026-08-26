@@ -1,64 +1,56 @@
 # Embodied Paper Deep Read
 
-> **授权说明：** 本项目源码可见，但不是 OSI 定义的开源软件。仅允许自然人用于个人、
-> 非商业的学习、研究和实验；禁止商用、组织内部使用和再分发。完整条款见
-> [Personal Learning License 1.0](LICENSE)。
+把一篇具身智能 / 机器人 / VLA / 世界模型论文，读成一份带原图、有页码依据的中文研读文档，默认发布到你自己的飞书「我的文档库」。
 
-一个用于具身智能、机器人、视觉—语言—动作模型及相关 AI 论文精读的 Codex skill。它会获取或索引
-PDF，建立带页码的证据笔记，筛选论文原图，撰写结构化中文研读文档，并默认发布到用户自己的
-飞书“我的文档库”。
+支持 **Claude Code** 和 **Codex**。
 
-## 到底哪个目录才是 skill？
+> 授权：源码可见但非开源软件，仅限自然人个人非商业使用。见 [LICENSE](LICENSE) 与文末说明。
 
-真正需要安装和使用的是仓库中的 **`embodied-paper-deep-read/`**，因为它里面包含入口文件
-`SKILL.md`。仓库根目录只是用于发布、说明和测试：
-
-```text
-embodied-paper-deep-read/          仓库根目录，不要把整个目录当成 skill 安装
-├── README.md                      用户说明
-├── LICENSE                        仓库许可证
-├── embodied-paper-deep-read/      ✅ 真正的 skill，用户安装这个目录
-│   ├── SKILL.md                   skill 入口和工作流
-│   ├── scripts/                   下载、PDF 索引、MinerU 和图片处理脚本
-│   ├── references/                精读深度、写作和版式规范
-│   ├── publishers/                飞书与本地 Markdown 发布规则
-│   └── agents/openai.yaml         Codex 界面元数据
-├── tests/                         仅供维护者开发测试，普通用户不用运行
-└── .github/workflows/ci.yml       GitHub 自动测试，普通用户不用处理
-```
-
-普通用户只需要：安装 `embodied-paper-deep-read/`、安装运行依赖、配置飞书 CLI，并按需配置
-MinerU。`tests/` 不参与论文精读，也不会被 Codex 当作 skill 加载。
-
-## 默认行为
-
-- 输出语言：中文。
-- 发布位置：当前登录用户的飞书“我的文档库”。
-- PDF 解析：公开 arXiv 论文优先使用 MinerU；用户上传的非公开 PDF 必须先获得明确同意。
-- 无法或不允许上传 MinerU 时：使用本地 PyMuPDF 页级索引继续研读。
-- 只有用户请求生成或发布研读文档时才创建飞书文档；不会擅自覆盖已有文档。
-
-## 普通用户安装步骤
-
-### 第一步：安装 skill 和 Python 依赖
-
-克隆仓库后，将 **`embodied-paper-deep-read/`** 复制到 Codex 的个人 skills 目录。不要复制
-`tests/`：
+## 安装
 
 ```bash
-cd /path/to/embodied-paper-deep-read
-mkdir -p "$HOME/.agents/skills"
-cp -R embodied-paper-deep-read "$HOME/.agents/skills/"
-python3 -m pip install -r "$HOME/.agents/skills/embodied-paper-deep-read/requirements.txt"
+git clone https://github.com/34328/Embodied-Paper-Deep-Read.git
+cd Embodied-Paper-Deep-Read
+bash install.sh
 ```
 
-Codex 通常会自动检测新增 skill。如果输入 `$embodied-paper-deep-read` 后没有出现该 skill，请重启
-Codex 再试。也可以在 Codex CLI 或 IDE 扩展中运行 `/skills` 查看是否已加载。
+安装脚本会自动完成全部工作：找到你的 Claude Code / Codex skill 目录并装进去、装好 Python 依赖（系统 Python 被托管时自动改用私有虚拟环境）、最后打印一份状态清单。重复运行即为升级。
 
-### 第二步：安装和配置飞书 CLI
+装完**重启 agent**，然后确认 skill 已被识别。
 
-由于本 skill 默认把研读文档发布到用户自己的飞书“我的文档库”，普通用户需要安装飞书官方
-维护的 [`@larksuite/cli`](https://github.com/larksuite/cli)。需要 Node.js 16 或更高版本。
+想检查状态或重装某一项，随时运行：
+
+```bash
+bash install.sh --check       # 只体检，不改任何东西
+bash install.sh --set-token   # 配置 MinerU token
+bash install.sh --uninstall   # 卸载
+bash install.sh --help        # 全部选项
+```
+
+## 使用
+
+在 agent 里附上 arXiv 链接或本地 PDF：
+
+```text
+用 embodied-paper-deep-read 精读这篇论文，发布到我的飞书文档库：https://arxiv.org/abs/2503.20020
+```
+
+Codex 里用 `$embodied-paper-deep-read` 显式调用，Claude Code 里用 `/embodied-paper-deep-read`，或者直接自然语言描述也能触发。
+
+两个常用变体：
+
+```text
+Use embodied-paper-deep-read to deep-read this paper and publish a Chinese study note to my Feishu documents.
+用 embodied-paper-deep-read 精读这个本地 PDF，不要上传到任何第三方，结果存成本地 Markdown。
+```
+
+每篇论文会在当前工作区生成一个独立目录，包含 PDF、页级索引、MinerU 输出、证据笔记、图片清单和发布状态。凭据不会写进论文目录。
+
+默认行为：输出中文；发布到当前登录用户的飞书「我的文档库」；只有你明确要求生成或发布时才会创建飞书文档，不会擅自覆盖已有文档。
+
+## 可选：发布到飞书
+
+默认发布后端是飞书，需要飞书官方的 [`@larksuite/cli`](https://github.com/larksuite/cli)（Node.js 16+）。**首次要发布时再配也来得及**，不影响前面的安装。
 
 ```bash
 npx @larksuite/cli@latest install
@@ -67,80 +59,40 @@ lark-cli auth login --domain docs --domain drive
 lark-cli auth status --json --verify
 ```
 
-首次配置与登录会要求用户在浏览器中完成飞书应用配置和授权。请遵循最小权限原则，只授权 Docs
-和 Drive 等完成论文发布所需的权限。若 CLI 命令发生变化，以其内置文档为准：
+`config init` 和 `auth login` 会引导你在浏览器里完成飞书应用配置与授权。按最小权限原则，只授权 Docs 和 Drive。
+
+不想装飞书 CLI，就在提示词里要求「输出本地 Markdown」。
+
+## 可选：配置 MinerU
+
+MinerU 是第三方 PDF 解析服务，能显著提升复杂公式、表格和原图的抽取质量。**不配也能用**——skill 会退回本地 PyMuPDF 页级索引，只是质量下降。
+
+在 [MinerU](https://mineru.net/doc/docs/index_en/) 个人中心申请 Precision Extract API Token，然后：
 
 ```bash
-lark-cli skills read lark-doc
-lark-cli docs --help
+bash install.sh --set-token
 ```
 
-如果不想安装飞书 CLI，可以在提示词中明确要求输出本地 Markdown。
+隐藏输入，写入 `~/.mineru_token`（权限 600）。也可以改用 `MINERU_TOKEN` 环境变量，环境变量优先。Token 有有效期，返回 401 时重跑一次上面的命令即可。
 
-### 第三步：按需配置 MinerU
+**隐私边界**：使用 MinerU 会把完整 PDF 上传给第三方。公开的 arXiv 论文默认可以用；**你自己的未发表稿件、在审论文、内部资料，skill 必须先征得你明确同意才会上传**，你也可以直接要求走纯本地流程。脚本不会关闭 TLS 校验，不会读取仓库内的 token 文件，也不会把 token 写进日志或输出文档。
 
-MinerU 是第三方文档解析服务，脚本会把完整 PDF 上传给 MinerU。请先阅读
-[MinerU 官方 API 文档](https://mineru.net/doc/docs/index_en/)，登录 MinerU 官网并在个人中心申请
-Precision Extract API Token，然后在当前 shell 会话中通过环境变量配置。为避免 token 进入命令
-历史，可以使用隐藏输入：
+## 常见问题
 
-```bash
-# Bash
-read -rsp "MinerU API token: " MINERU_TOKEN && printf '\n'
-export MINERU_TOKEN
+| 症状 | 原因 | 解决 |
+|---|---|---|
+| agent 里找不到这个 skill | 装完没重启 | 重启 agent；再跑 `bash install.sh --check` 确认装到了哪 |
+| `externally-managed-environment` | 系统 Python 受 PEP 668 保护 | 重跑 `bash install.sh`，它会自动改用私有虚拟环境 |
+| `could not create .venv` | Debian/Ubuntu 缺 venv 模块 | `sudo apt install python3-venv` 后重跑 |
+| `PyMuPDF is not available for this interpreter` | conda / 多 Python 环境切换了解释器 | 重跑 `bash install.sh`；脚本此后会自动切回正确的解释器 |
+| `MINERU_TOKEN is not set and ~/.mineru_token does not exist` | 没配 MinerU | `bash install.sh --set-token`，或不配（走本地解析） |
+| MinerU 返回 `401` | token 过期或无效 | 重新申请后 `bash install.sh --set-token` |
+| lark-cli 报 `unsafe file path` | 传了绝对路径的 `@file` | `cd` 到图片目录，改用 `./fig.png` 这样的相对路径 |
+| `python3 not found` / 版本过低 | 需要 Python 3.9+ | 装一个新版 Python 后重跑安装 |
 
-# Zsh
-read -rs 'MINERU_TOKEN?MinerU API token: ' && printf '\n'
-export MINERU_TOKEN
-```
+## 开发
 
-环境变量必须存在于启动 Codex 的环境中。如果使用 Codex CLI，请从设置了该变量的同一个终端
-启动 Codex；如果使用桌面应用，请通过操作系统的安全环境变量或密码管理方案注入变量，然后重启
-Codex。没有 MinerU token 时，仍可要求 skill 使用本地 PDF 索引，但复杂公式、表格和原图抽取
-质量可能下降。
-
-建议把该命令写入本机安全的 shell 配置或密码管理方案。不要把 token：
-
-- 粘贴到聊天中；
-- 写进 `SKILL.md`、README、脚本或明文 shell 配置；
-- 提交到 Git；
-- 放进论文输出目录。
-
-脚本不会读取仓库内的 token 文件，也不会关闭 TLS 证书校验。未配置 token 时会停止并给出配置提示。
-
-## 使用
-
-完成上述配置后，在 Codex 中附上 arXiv 链接或 PDF，并调用：
-
-```text
-使用 $embodied-paper-deep-read 精读这篇论文，并把中文研读文档发布到我的飞书文档库：<arXiv URL>
-```
-
-英文提示词也可以：
-
-```text
-Use $embodied-paper-deep-read to deep-read this paper and publish a Chinese study note to my Feishu documents.
-```
-
-也可以明确要求不进行任何第三方上传并输出本地 Markdown：
-
-```text
-Use $embodied-paper-deep-read to analyze this local PDF without uploading it, and save the note as local Markdown.
-```
-
-每篇论文会在当前工作区得到一个独立目录，其中包含 PDF、页级索引、MinerU 输出（如果启用）、
-证据笔记、图像清单和发布状态。MinerU token 与飞书凭据不会写入论文目录。
-
-## 开发与验证
-
-```bash
-python3 -m pip install -r embodied-paper-deep-read/requirements-dev.txt
-python3 -m unittest discover -s tests -v
-python3 -m py_compile embodied-paper-deep-read/scripts/*.py
-bash -n embodied-paper-deep-read/scripts/mineru_parse_pdf.sh
-```
-
-测试使用临时生成的 PDF，不需要 MinerU token，也不会写入飞书。
+见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 许可证
 
@@ -153,6 +105,4 @@ bash -n embodied-paper-deep-read/scripts/mineru_parse_pdf.sh
 - 禁止重新发布、镜像、转售、转授权或公开分发修改版本；
 - 商业或组织用途必须另行取得版权所有者的书面授权。
 
-这是一份源码可见许可证，不属于 OSI 认可的开源许可证。完整且具有约束力的英文条款见
-[LICENSE](LICENSE)。论文、论文图片、PyMuPDF、MinerU 和飞书 CLI 仍分别受其原始许可证与
-服务条款约束。
+这是一份源码可见许可证，不属于 OSI 认可的开源许可证。完整且具有约束力的英文条款见 [LICENSE](LICENSE)。论文、论文图片、PyMuPDF、MinerU 和飞书 CLI 仍分别受其原始许可证与服务条款约束。

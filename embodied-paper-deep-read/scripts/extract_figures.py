@@ -7,10 +7,12 @@ import os
 import re
 import sys
 
-try:
-    import fitz
-except ImportError:
-    sys.exit("PyMuPDF not installed. Try: python3 -m pip install pymupdf")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _pymupdf import ensure_pymupdf
+
+ensure_pymupdf()
+
+import fitz
 
 
 CAPTION_RE = re.compile(r"^\s*(fig(?:ure)?\.?|table)\s*[A-Z]?\.?\d+", re.IGNORECASE)

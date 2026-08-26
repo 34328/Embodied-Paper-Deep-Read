@@ -1,1 +1,4 @@
 PyMuPDF>=1.23,<2
+# Pillow backs the aspect-ratio cross-check in scripts/render_figures.py, which is
+# what proves a re-rendered figure covers the same region as MinerU's own image.
+Pillow>=9,<13

@@ -4,8 +4,10 @@ umask 077
 
 usage() {
   printf 'Usage: %s /path/to/file.pdf [output_dir]\n' "$(basename "$0")"
-  printf '\nRequired environment:\n'
-  printf '  MINERU_TOKEN            Token created by the user on mineru.net\n'
+  printf '\nCredentials (either one):\n'
+  printf '  MINERU_TOKEN            Environment variable, takes precedence\n'
+  printf '  ~/.mineru_token         File containing the token, mode 600\n'
+  printf '  Create either with:     bash install.sh --set-token\n'
   printf '\nOptional environment:\n'
   printf '  MINERU_LANGUAGE         Auto-detected when unset\n'
   printf '  MINERU_IS_OCR           true/false, default false\n'
@@ -13,7 +15,7 @@ usage() {
   printf '  MINERU_PAGE_RANGES      Example: 1-10 or 2,4-6\n'
   printf '  MINERU_TIMEOUT_SECONDS  Polling timeout, default 1800\n'
   printf '  MINERU_POLL_SECONDS     Polling interval, default 5\n'
-  printf '  MINERU_REFRESH          true to replace managed full.md/images\n'
+  printf '  MINERU_REFRESH          true to replace managed full.md/images/layout.json\n'
 }
 
 if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
@@ -34,15 +36,21 @@ if [[ ! -f "$PDF_PATH" ]]; then
   printf 'PDF not found: %s\n' "$PDF_PATH" >&2
   exit 1
 fi
+TOKEN_FILE="${HOME:-}/.mineru_token"
+if [[ -z "${MINERU_TOKEN:-}" && -n "${HOME:-}" && -f "$TOKEN_FILE" ]]; then
+  MINERU_TOKEN=$(tr -d '\r\n' < "$TOKEN_FILE")
+fi
 if [[ -z "${MINERU_TOKEN:-}" ]]; then
-  printf 'MINERU_TOKEN is not set. Create a token in your MinerU account and export it securely.\n' >&2
-  printf 'Official API documentation: https://mineru.net/doc/docs/index_en/\n' >&2
-  printf 'See this repository README. Do not paste the token into chat or commit it.\n' >&2
+  printf 'MINERU_TOKEN is not set and ~/.mineru_token does not exist.\n' >&2
+  printf 'Store a token once with:  bash install.sh --set-token\n' >&2
+  printf 'or export MINERU_TOKEN in the shell that starts your agent.\n' >&2
+  printf 'Create the token in your MinerU account: https://mineru.net/doc/docs/index_en/\n' >&2
+  printf 'Do not paste the token into chat or commit it.\n' >&2
   exit 2
 fi
 case "$MINERU_TOKEN" in
-  *$'\n'*|*$'\r'*) printf 'MINERU_TOKEN must not contain newlines\n' >&2; exit 2 ;;
-  *[!A-Za-z0-9._~+/=-]*) printf 'MINERU_TOKEN contains unsupported characters\n' >&2; exit 2 ;;
+  *$'\n'*|*$'\r'*) printf 'MinerU token must not contain newlines\n' >&2; exit 2 ;;
+  *[!A-Za-z0-9._~+/=-]*) printf 'MinerU token contains unsupported characters\n' >&2; exit 2 ;;
 esac
 
 for cmd in curl python3; do
@@ -239,9 +247,17 @@ source_images = source_root / "images"
 if not source_images.is_dir():
     source_images.mkdir()
 
+# layout.json carries MinerU's own figure bboxes; render_figures.py re-rasterizes
+# from those instead of guessing figure boundaries. Not every model version emits it.
+source_layout = source_root / "layout.json"
+if not source_layout.is_file():
+    found = [p for p in extract_dir.rglob("*layout.json") if p.is_file()]
+    source_layout = found[0] if found else None
+
 output_dir.mkdir(parents=True, exist_ok=True)
 marker = output_dir / ".embodied-paper-deep-read-mineru"
-unmanaged = [p for p in output_dir.iterdir() if p.name not in {"full.md", "images", marker.name}]
+managed = {"full.md", "images", "layout.json", marker.name}
+unmanaged = [p for p in output_dir.iterdir() if p.name not in managed]
 if unmanaged and not marker.exists():
     raise SystemExit(f"refusing to modify unmanaged output directory: {output_dir}")
 
@@ -251,6 +267,9 @@ try:
     shutil.copy2(candidates[0], stage / "full.md")
     shutil.copytree(source_images, stage / "images")
     os.replace(stage / "full.md", output_dir / "full.md")
+    if source_layout is not None:
+        shutil.copy2(source_layout, stage / "layout.json")
+        os.replace(stage / "layout.json", output_dir / "layout.json")
     if backup.exists():
         shutil.rmtree(backup)
     if (output_dir / "images").exists():
@@ -269,4 +288,4 @@ finally:
 PY
 
 printf 'Done. Output directory: %s\n' "$WORK_DIR"
-printf 'Kept only managed full.md and images/; temporary API responses were removed.\n'
+printf 'Kept only managed full.md, images/ and layout.json; temporary API responses were removed.\n'

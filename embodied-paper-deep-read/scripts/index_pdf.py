@@ -7,6 +7,7 @@ import os
 import shutil
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fetch_arxiv import dump_page_text, load_metadata, valid_pdf, validate_slug, write_json
 
 

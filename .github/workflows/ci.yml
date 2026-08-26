@@ -6,13 +6,36 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # macOS ships bash 3.2, which install.sh must stay compatible with.
+    # 3.9 is the floor the scripts and README promise.
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.9", "3.11", "3.13"]
+        exclude:
+          # setup-python has no arm64 macOS build for 3.9; the floor is covered on Linux.
+          - os: macos-latest
+            python-version: "3.9"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
       - run: python -m pip install -r embodied-paper-deep-read/requirements-dev.txt
       - run: python -m unittest discover -s tests -v
       - run: python -m py_compile embodied-paper-deep-read/scripts/*.py
+      - run: bash -n install.sh
       - run: bash -n embodied-paper-deep-read/scripts/mineru_parse_pdf.sh
+
+  bash32:
+    # The bash the installer actually meets on a stock Mac.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: /bin/bash --version
+      - run: /bin/bash -n install.sh
+      - run: /bin/bash install.sh --dest "$RUNNER_TEMP/skills" --skip-deps
+      - run: test -f "$RUNNER_TEMP/skills/embodied-paper-deep-read/SKILL.md"
+      - run: /bin/bash install.sh --check

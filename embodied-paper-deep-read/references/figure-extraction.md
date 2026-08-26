@@ -1,8 +1,10 @@
 # Figure extraction (phase 2)
 
-Prefer figures already extracted by MinerU into `images/`. Crop real PDF figures with
-PyMuPDF only when MinerU output is missing, split incorrectly, low quality, or mismatched
-with the caption. Avoid web screenshots and repeated full-page renders.
+Prefer figures already extracted by MinerU into `images/` — but **select** from them, do not
+publish them as-is: MinerU caps its own images near ~1100px wide, which renders soft at 2x
+(see "Resolution" below). Re-render the selected figures from the PDF at MinerU's own bboxes
+instead. Crop by hand with PyMuPDF only when MinerU output is missing, split incorrectly, low
+quality, or mismatched with the caption. Avoid web screenshots and repeated full-page renders.
 
 ## Inventory once
 
@@ -30,9 +32,52 @@ python3 <skill-dir>/scripts/extract_figures.py paper.pdf \
 
 The fallback inventory records per-page caption lines and raster bboxes.
 
+## Resolution: re-render at MinerU's own bboxes
+
+MinerU exposes **no** resolution / DPI / scale parameter — verified against the official CLI
+and output-format docs, and absent from the API request body. It caps extracted images near
+**~1100px wide**, and rasterizes vector charts far below that (panels land around 685px).
+
+That is too soft for a Retina reader. A figure displayed at 760 CSS px needs
+`760 × 2 ≈ 1520` physical pixels; 1050px is only 0.69× of that and reads blurry. **Also never
+set a display width above the asset's pixel width** — publishing a 685px image at 760px
+upscales it and is the most visible failure.
+
+The fix is to keep MinerU's *boundaries* and redo only the *rasterization*:
+
+```bash
+python3 <skill-dir>/scripts/render_figures.py \
+    <paper.pdf> <paper-folder>/mineru --out figs_hires \
+    --pick bcedd339=Fig1:760 --pick f58ef364=Fig10:760
+```
+
+`--pick <filename-prefix>=<label>[:<display-width>]`; omit every `--pick` to render all of them.
+Reads `mineru/layout.json`, renders each bbox at `display-width × 2`, and prints a
+ratio-check table. Publish `figs_hires/*.png` and keep the display width unchanged — the
+uplift is pixel density, not layout.
+
+Three rules make this safe, each learned from a real failure:
+
+- **Never derive figure boundaries yourself.** Heuristics over text blocks and drawing rects
+  mis-frame figures: one pass swallowed the paper title, authors, and URL into the teaser; the
+  next clipped a side-by-side panel in half. `layout.json` carries MinerU's own detected bbox
+  per figure (same `pdf_info` structure as `middle.json`) — use it as the authority. Given a
+  correct rect, rendering is deterministic and safe.
+- **Map by image filename, never by figure number.** MinerU mis-assigns caption numbers when
+  two panels sit side by side (it labeled a Figure 15 panel as "Figure 14"). The filename it
+  wrote for a bbox is unambiguous; the caption number is not.
+- **Cross-check the aspect ratio** against MinerU's own raster for that filename. Matching
+  ratios (within ~4%) prove you cropped the same region at higher resolution. The script flags
+  mismatches — inspect those visually before publishing, and always eyeball the teaser plus any
+  figure whose caption cites specific numbers.
+
+If `layout.json` is missing, the MinerU result predates this skill keeping it. Re-run
+`scripts/mineru_parse_pdf.sh` with `MINERU_REFRESH=true` to fetch it.
+
 ## Fast path and vector fallback
 
-- If MinerU produced a clean image file that matches the needed figure, use it directly.
+- If MinerU has a bbox for the figure, re-render it per "Resolution" above rather than
+  publishing the JPEG.
 - If MinerU split a composite figure into useful panels, either select the panel that supports
   the argument or recreate a compact comparison by using the original PDF crop.
 - If the PDF inventory has a raster bbox matching the caption, crop it with `--auto`; do not

@@ -11,6 +11,11 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _pymupdf import ensure_pymupdf
+
+ensure_pymupdf()
+
 
 MODERN_ARXIV_ID_RE = re.compile(r"(\d{4}\.\d{4,5})(v\d+)?", re.IGNORECASE)
 LEGACY_ARXIV_ID_RE = re.compile(
@@ -127,10 +132,8 @@ def write_json(path, value):
 
 
 def dump_page_text(pdf_path, out_txt, out_jsonl):
-    try:
-        import fitz
-    except ImportError:
-        sys.exit("PyMuPDF not installed. Try: python3 -m pip install pymupdf")
+    ensure_pymupdf()
+    import fitz
 
     pdf_path = os.fspath(pdf_path)
     out_txt = os.fspath(out_txt)

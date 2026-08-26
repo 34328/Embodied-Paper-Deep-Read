@@ -29,9 +29,10 @@ MinerU is a third-party service and `scripts/mineru_parse_pdf.sh` uploads the co
 - For a user-supplied, unpublished, review-confidential, proprietary, or otherwise non-public
   PDF, obtain explicit consent before uploading it. Without consent, use the local page-aware
   index and PDF inspection only.
-- Accept MinerU credentials only through the `MINERU_TOKEN` environment variable. If it is
-  absent, stop with setup instructions. Never ask the user to paste a token into chat, read a
-  token from a repository file, or embed one in commands, logs, skill source, or generated notes.
+- Accept MinerU credentials only from the `MINERU_TOKEN` environment variable or the user's
+  own `~/.mineru_token` file (mode 600). If neither exists, stop with setup instructions.
+  Never ask the user to paste a token into chat, read a token from a repository file, or embed
+  one in commands, logs, skill source, or generated notes.
 - Never disable TLS verification. Respect the user's standard proxy and CA configuration.
 
 ## Quick start
@@ -82,10 +83,25 @@ experiments, limitations, relevant appendix evidence, figures, and unresolved qu
 
 ### 2. Inventory and extract figures
 
-Read `references/figure-extraction.md`. Prefer MinerU's `images/` and Markdown image
-references; select useful figures directly and create the manifest from those files. If the
-MinerU task is still pending, wait for the MinerU result instead of independently rendering or
-cropping paper figures. Use PDF cropping only after MinerU output is available and demonstrably
+Read `references/figure-extraction.md`. Use MinerU's `images/` and Markdown image references to
+**select** figures and build the manifest. If the MinerU task is still pending, wait for the
+MinerU result instead of independently rendering or cropping paper figures.
+
+**Then re-render the selected figures before publishing** — MinerU caps its own images near
+~1100px wide, too soft at 2x/Retina, and a display width above the file's pixel width upscales
+it visibly:
+
+```bash
+python3 <skill-dir>/scripts/render_figures.py \
+    <paper.pdf> <paper-folder>/mineru --out figs_hires --pick <prefix>=<label>:<width>
+```
+
+This keeps MinerU's own bboxes (from `mineru/layout.json`) and redoes only the rasterization.
+Never derive figure boundaries yourself, map by image filename rather than figure number, and
+check the printed aspect-ratio table — the reasons for all three are in
+`references/figure-extraction.md` "Resolution".
+
+Use manual PDF cropping only after MinerU output is available and demonstrably
 misses a needed figure, splits a composite badly, or produces an unusable image; for ambiguous
 fallbacks, ask the user before substituting manual crops. Keep related-work external figures
 **off by default**. Search other papers for 1–2 architecture figures only when the user
@@ -117,6 +133,11 @@ Load only the selected publisher:
 Publish text first and images second. Treat the figure manifest line
 `file | anchor | width | caption` as the durable write/publish contract.
 
+Write Chinese punctuation full-width from the start (see `references/writing-style.md`
+"Chinese punctuation and mixed-language typography"). To normalize or audit a block's XML,
+pipe it through `scripts/normalize_cjk_punct.py` (stdin → stdout); it preserves half-width in
+ratios, latex, URLs, and version strings.
+
 ## Completion checks
 
 - Cover the paper's argument, main method, decisive experiments, limitations, and relevant
@@ -131,5 +152,9 @@ Publish text first and images second. Treat the figure manifest line
 - On Feishu, use native heading sequences; never embed chapter numbers in H1/H2/H3 text.
 - Center all figures/whiteboards and make every table full-width with centered cells. Render
   loss functions and long equations as standalone centered display blocks.
+- **Publish figures at ~2× their display width, never above their pixel width.** Re-render the
+  selected figures from the PDF at MinerU's own `layout.json` bboxes (`render_figures.py`)
+  instead of publishing MinerU's ~1100px-capped JPEGs; confirm the ratio-check table passes and
+  eyeball the teaser plus any figure whose caption cites specific numbers.
 - Do not reload an unchanged PDF, regenerate an unchanged index, or refetch Feishu after every
   image operation.

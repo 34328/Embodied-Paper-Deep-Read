@@ -29,8 +29,8 @@ Bash 安装脚本的支持范围内，请在 WSL 中运行。论文下载、Mine
 只使用一个 agent 时可运行 `--agent claude` 或 `--agent codex`。不传 `--agent`
 会根据本机可检测到的 agent 自动选择；需要明确安装到两个 agent 时建议始终使用
 `--agent both`。Claude Code 使用 `~/.claude/skills`（或 `CLAUDE_CONFIG_DIR/skills`），
-Codex 使用 `~/.agents/skills`。旧版 `~/.codex/skills/paper-deep-read` 只会被报告，
-不会被脚本自动覆盖或删除。
+Codex 使用 `$CODEX_HOME/skills`（未设置时为 `~/.codex/skills`），并同步兼容路径
+`~/.agents/skills`。旧版 `paper-deep-read` 目录只会被报告，不会被脚本自动覆盖或删除。
 
 装完**重启 agent**，然后确认 skill 已被识别。
 

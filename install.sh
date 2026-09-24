@@ -9,8 +9,8 @@ REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 SOURCE_DIR="$REPO_ROOT/$SKILL_NAME"
 
 CLAUDE_SKILLS="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills"
-CODEX_SKILLS="$HOME/.agents/skills"
-LEGACY_CODEX_SKILLS="$HOME/.codex/skills"
+CODEX_SKILLS="${CODEX_HOME:-$HOME/.codex}/skills"
+CODEX_ALT_SKILLS="$HOME/.agents/skills"
 LEGACY_SKILL_NAME="paper-deep-read"
 TOKEN_FILE="$HOME/.mineru_token"
 
@@ -42,9 +42,9 @@ Options:
 
 With no options: detect installed agents, install into their user skill roots,
 resolve Python dependencies, and print a status summary. MinerU is required;
-use --set-token to finish setup after obtaining your own token. The legacy
-Codex root ~/.codex/skills and old skill name paper-deep-read are reported,
-but never modified automatically.
+use --set-token to finish setup after obtaining your own token. Both known
+Codex roots are synchronized when they are distinct. An older skill named
+paper-deep-read is reported, but never modified automatically.
 EOF
 }
 
@@ -120,8 +120,16 @@ detect_targets() {
   fi
   case "$AGENT" in
     claude) printf '%s\n' "$CLAUDE_SKILLS"; return 0 ;;
-    codex) printf '%s\n' "$CODEX_SKILLS"; return 0 ;;
-    both) printf '%s\n%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS"; return 0 ;;
+    codex)
+      printf '%s\n' "$CODEX_SKILLS"
+      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
+      return 0
+      ;;
+    both)
+      printf '%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS"
+      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
+      return 0
+      ;;
   esac
 
   # Existing skill roots alone are not enough: a freshly installed second
@@ -131,16 +139,20 @@ detect_targets() {
   if command -v claude >/dev/null 2>&1 || [ -d "$CLAUDE_SKILLS" ]; then
     have_claude=true
   fi
-  if command -v codex >/dev/null 2>&1 || [ -d "$CODEX_SKILLS" ] || [ -d "$LEGACY_CODEX_SKILLS" ]; then
+  if command -v codex >/dev/null 2>&1 || [ -d "$CODEX_SKILLS" ] || [ -d "$CODEX_ALT_SKILLS" ]; then
     have_codex=true
   fi
   if [ "$have_claude" = true ] || [ "$have_codex" = true ]; then
     [ "$have_claude" = false ] || printf '%s\n' "$CLAUDE_SKILLS"
-    [ "$have_codex" = false ] || printf '%s\n' "$CODEX_SKILLS"
+    if [ "$have_codex" = true ]; then
+      printf '%s\n' "$CODEX_SKILLS"
+      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
+    fi
     return 0
   fi
   if [ ! -t 0 ]; then
     printf '%s\n%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS"
+    [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
     return 0
   fi
   printf 'No supported agent found. Where should the skill go?\n' >&2
@@ -151,8 +163,14 @@ detect_targets() {
   read -r choice
   case "$choice" in
     1) printf '%s\n' "$CLAUDE_SKILLS" ;;
-    2) printf '%s\n' "$CODEX_SKILLS" ;;
-    *) printf '%s\n%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS" ;;
+    2)
+      printf '%s\n' "$CODEX_SKILLS"
+      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
+      ;;
+    *)
+      printf '%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS"
+      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
+      ;;
   esac
 }
 
@@ -290,8 +308,14 @@ status_targets() {
   fi
   case "$AGENT" in
     claude) printf '%s\n' "$CLAUDE_SKILLS" ;;
-    codex) printf '%s\n' "$CODEX_SKILLS" ;;
-    *) printf '%s\n%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS" ;;
+    codex)
+      printf '%s\n' "$CODEX_SKILLS"
+      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
+      ;;
+    *)
+      printf '%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS"
+      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
+      ;;
   esac
 }
 
@@ -306,17 +330,14 @@ PY
 
 legacy_status() {
   local root item
-  for root in "$CLAUDE_SKILLS" "$CODEX_SKILLS" "$LEGACY_CODEX_SKILLS"; do
+  for root in "$CLAUDE_SKILLS" "$CODEX_SKILLS" "$CODEX_ALT_SKILLS"; do
     for item in "$LEGACY_SKILL_NAME"; do
       if [ -f "$root/$item/SKILL.md" ]; then
         warn "older skill still present: $root/$item"
       fi
     done
   done
-  if [ -f "$LEGACY_CODEX_SKILLS/$SKILL_NAME/SKILL.md" ]; then
-    warn "skill in legacy Codex root: $LEGACY_CODEX_SKILLS/$SKILL_NAME"
-  fi
-  say "Legacy copies are never moved or deleted automatically; see README.md."
+  say "Older copies named paper-deep-read are never moved or deleted automatically; see README.md."
 }
 
 status() {

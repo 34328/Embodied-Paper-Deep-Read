@@ -455,7 +455,7 @@ class InstallerTests(unittest.TestCase):
                 env=env,
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            for root in (home / ".claude/skills", home / ".agents/skills"):
+            for root in (home / ".claude/skills", home / ".codex/skills", home / ".agents/skills"):
                 self.assertTrue((root / "embodied-paper-deep-read/SKILL.md").is_file())
 
 

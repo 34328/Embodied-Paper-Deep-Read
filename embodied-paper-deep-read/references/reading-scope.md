@@ -1,28 +1,36 @@
 # Reading scope (phase 1)
 
 Cover the whole argument and relevant appendix evidence without loading the whole raw text at
-once. Prefer the MinerU Markdown package as the navigation layer; use the page-aware PDF
-index as verification and fallback. The evidence note is the durable memory.
+once. MinerU Markdown is the required source for parsing and navigating the paper's body. Use
+the source PDF or a page-aware PDF index only to verify page locations and ambiguous details;
+neither replaces an unusable MinerU body parse. The evidence note is the durable memory.
 
 ## Acquire once
 
 ```bash
 python3 <skill-dir>/scripts/fetch_arxiv.py "<link-or-id>" \
-  --dir "<paper-folder>" --slug "<slug>"
-MINERU_LANGUAGE=en bash <skill-dir>/scripts/mineru_parse_pdf.sh \
+  --dir "<paper-folder>" --slug "<slug>" --no-text
+bash <skill-dir>/scripts/mineru_parse_pdf.sh \
   "<paper-folder>/<slug>.pdf" "<paper-folder>/mineru"
 ```
 
-Reuse cached PDF, metadata, text, JSONL, and MinerU output. Pass `--refresh` only for an
-invalid cache or a new paper version. For a user PDF, always create the local page-aware index
+Reuse cached PDF, metadata, and MinerU output. Pass `--refresh` only for an invalid cache or a
+new paper version. For a user PDF, copy it into the paper folder without extracting body text
 first:
 
 ```bash
 python3 <skill-dir>/scripts/index_pdf.py "/path/to/paper.pdf" \
-  --dir "<paper-folder>" --slug "<slug>"
+  --dir "<paper-folder>" --slug "<slug>" --no-text
 ```
 
-Run MinerU on a user PDF only after applying the privacy-and-consent rule in `SKILL.md`.
+Run MinerU on a user PDF only after applying the privacy-and-consent rule in `SKILL.md`. If the
+token is missing, upload is declined, or MinerU fails, stop the deep-read and state the next
+action. Do not continue by reading `_full.txt`, `_pages.jsonl`, or locally extracted PDF text
+as a substitute for MinerU.
+The MinerU script checks the service's per-file page limit before upload. If the PDF exceeds
+that limit, stop rather than dropping appendix pages or reading them through PyMuPDF. Ask for a
+shorter complete source or separately supplied volumes that MinerU can parse, preserve each
+volume's original page-range mapping, and resume only when the full argument can be covered.
 
 MinerU's expected contract is:
 
@@ -30,10 +38,12 @@ MinerU's expected contract is:
 <paper-folder>/mineru/
   full.md
   images/
+  layout.json  (optional; some model versions do not emit it)
 ```
 
-If `full.md` is missing, badly ordered, or formula/table extraction is unreliable for the
-paper, fall back to `_pages.jsonl` and the PDF.
+If `full.md` is missing, badly ordered, or too unreliable in crucial formulas/tables to
+reconstruct the argument, stop and report the extraction problem. Targeted PDF inspection can
+verify an otherwise usable MinerU passage but cannot replace a missing or unusable section.
 
 ## Two-pass reading
 
@@ -44,11 +54,13 @@ paper, fall back to `_pages.jsonl` and the PDF.
    training, experiments, failure cases, and appendix details. Use bounded slices of roughly
    8–12k extracted characters. Summarize each slice before opening the next.
 
-Do not issue a single command/tool call that returns the complete `full.md` or `_full.txt`.
+Do not issue a single command/tool call that returns the complete `full.md`.
 Skip the final bibliography list, but read the Related Work prose and any references discussed
 substantively in the paper's argument.
 
-Use `_pages.jsonl` or the PDF to verify:
+Use the source PDF to verify the following. If searchable page text would help, rerun the
+corresponding `fetch_arxiv.py` or `index_pdf.py` command without `--no-text` to create
+`_pages.jsonl` and `_full.txt`; use those files only for targeted page verification:
 
 - numbers, dimensions, datasets, and hyperparameters;
 - equations that MinerU may have linearized incorrectly;

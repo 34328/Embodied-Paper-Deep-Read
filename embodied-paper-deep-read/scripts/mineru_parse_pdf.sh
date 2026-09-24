@@ -100,6 +100,13 @@ if [[ "$PDF_BYTES" -gt 209715200 ]]; then
   printf 'PDF exceeds the MinerU Precision Extract API limit of 200 MB\n' >&2
   exit 2
 fi
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+PAGE_COUNT=$(python3 "$SCRIPT_DIR/pdf_page_count.py" "$PDF_PATH")
+if [[ "$PAGE_COUNT" -gt 200 ]]; then
+  printf 'PDF has %s pages and exceeds the MinerU Precision Extract API limit of 200 pages.\n' "$PAGE_COUNT" >&2
+  printf 'No partial extraction was uploaded. Split the source into supported parts before retrying.\n' >&2
+  exit 2
+fi
 
 detect_language() {
   command -v pdftotext >/dev/null 2>&1 || { printf 'en\n'; return; }

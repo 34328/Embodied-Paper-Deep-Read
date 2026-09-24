@@ -1,18 +1,20 @@
 # Writing style (phase 3)
 
-> Source rule: skill_notes §四. This is what separates a real deep-read from an
-> AI-generated summary. Violating these makes the document read as machine-written.
+> Write for a technically literate reader, with clear structure and source-faithful
+> claims rather than formulaic summary language.
 
-## Ban AI-tone tells
+## Evidence-led tone
 
-- **No disclaimer / meta-narration.** Never write "（以下均以论文原文所述为准）",
-  "本文将介绍…", "综上所述", "值得注意的是" as filler. Just state the content.
-- **No hedging boilerplate** wrapping every claim.
+- Remove filler such as "本文将介绍…", "综上所述", and "值得注意的是" when it
+  adds no information. State the substantive claim directly.
+- Avoid formulaic hedging, but retain uncertainty, scope, sample size, and causal
+  limits that matter to the evidence. Mark a reading-based inference as such rather
+  than writing it as an author claim.
 - Don't announce structure ("接下来我们分三点讨论"); let the headings do that.
 
-## The two failure modes, and the rule that prevents both
+## Two common layout failures
 
-Deep-read bodies fail in two opposite ways. Both are common; you must avoid both.
+Dense notes often develop one of two layout problems:
 
 - **Failure A — bold-lead wall.** A run of paragraphs each opening with a bold label:
   `**鸿沟一:…。** <150 字长段>` / `**Phase 1——冻结 VLM。** <长段,里面还套第二个加粗>`.
@@ -22,23 +24,23 @@ Deep-read bodies fail in two opposite ways. Both are common; you must avoid both
   mechanism + numbers + qualitative analysis + caveat, with no visual structure at all.
   Common in 实验结果 / 讨论 sections.
 
-**The fix for both is the same move:** when a block of text contains a set of parallel or
-sequenced items (multiple gaps, multiple stages, multiple findings, multiple failure modes),
-lead with **one framing sentence**, then break the items into a **list** — each item a
-complete explanatory bullet (可长可短). Reserve flowing multi-paragraph prose for genuinely
-*continuous* argument (motivation, a single causal chain, synthesis), not for enumerations.
+When a block contains parallel or sequenced items (multiple gaps, stages, findings,
+or failure modes), a framing sentence followed by a list often exposes the
+structure. Each item should be a complete explanation. Keep flowing paragraphs
+for a continuous argument such as motivation, a causal chain, or synthesis.
 
-### Hard rule (not a preference)
+### Layout decisions
 
-1. **Never place 3+ bold-lead paragraphs in a row.** The moment you have three parallel items
-   each wanting a bold label, that is a **list**, not three paragraphs. Convert it:
+1. Three or more consecutive bold-lead paragraphs usually signal parallel items
+   that would read better as a list. If they are genuinely separate arguments,
+   give them their own paragraphs or subheadings. For parallel items, convert to:
    `<p>` framing sentence + `<ul><li><b>标签:</b> 完整解释…</li>…</ul>`.
-2. **Never let one paragraph carry more than one of** {setup, mechanism, numeric results,
-   qualitative failure analysis, caveat}. If it does, split — and move the parallel part into
-   a list or table.
-3. **Never nest a second `<b>…。</b>` lead inside a bold-lead paragraph** (e.g. a bold "Phase 1"
-   paragraph whose body then bolds "静态路由"). Put the bold label on its own short line, then
-   explain in following short paragraphs — or make the whole thing a list.
+2. Give each paragraph one coherent argument. A conclusion, its decisive number,
+   and a necessary caveat may belong together; split when setup, mechanisms,
+   multiple findings, and failure modes become unrelated strands.
+3. Avoid nested bold leads inside one paragraph (e.g. a bold "Phase 1" lead whose
+   body then bolds "静态路由"). Use a subheading or a list when there are real
+   subtopics; leave ordinary emphasis in prose when it clarifies a single point.
 
 ### Prose-vs-points decision test
 
@@ -47,9 +49,8 @@ argument?*
 - **Parallel / sequenced** (三条鸿沟、两个 phase、四类 VQA、一组失败模式、三点结论) → **list**,
   one framing sentence above it. This is the default for "结果 / 讨论 / 局限" content.
 - **Continuous** (为什么现有方法不行 → 所以本文这样做;一条因果链;一段综述) → **prose**,
-  2–4 sentences per paragraph, connected with 因为 / 相比之下 / 这带来的问题是.
-- When in doubt on enumerable content, prefer the list. The recurring failure is always too
-  much undifferentiated prose, never too many well-formed lists.
+  with the reasoning and necessary evidence kept together.
+- For enumerable content, prefer a list when it makes the relation among items clearer.
 
 ### Worked example (this is the exact mistake to avoid)
 
@@ -61,16 +62,16 @@ BAD — **bold-lead wall** (what a lazy pass produces):
 ```
 GOOD — **framing sentence + list** (same content, real structure):
 ```
-<p>作者把用当前 VLM 学动作的困难，归纳为三条根本性的鸿沟：</p>
+<p>作者把视觉语言模型用于连续动作预测时的难点归纳为三个方面：</p>
 <ul>
   <li><b>模态与数据规模。</b>视觉特征可经 CLIP 与文本对齐，而动作是 3D+时间上的连续信号，
       缺乏长期表征研究与海量数据驱动……</li>
   <li><b>预训练分布。</b>具身视觉是第一人称、鱼眼、自遮挡，与互联网图像差异大，VLM 难覆盖
       具身 VQA……</li>
-  <li><b>训练目标。</b>next-token 似然 vs 连续高频动作的生成目标，直接嫁接会灾难性退化……</li>
+  <li><b>训练目标。</b>next-token 似然与连续动作生成的优化目标不同；性能影响须由原文实验说明。</li>
 </ul>
 ```
-The list keeps every technical claim, but the reader now sees "three gaps" at a glance instead
+The list keeps every technical claim, but the reader now sees the three aspects at a glance instead
 of decoding three lookalike paragraphs. Apply the same conversion to sequential stages
 (Inspiration / Integration phases), enumerated findings (每个 5.2.x 小节的结论), and
 failure-mode inventories.
@@ -86,35 +87,16 @@ failure-mode inventories.
 - The top **精华提炼** callout follows the same list discipline: one conclusion sentence + 3–5
   parallel bullets.
 
-### Open tight — even prose sections must not front-load a wall
+### Open with the issue, then develop the evidence
 
-Sections that legitimately stay as prose (问题定义、动机、综述引言) still fail if they open with a
-dense multi-sentence pile. A reader landing on a heading should meet a **short hook**, not a
-paragraph they must decode.
+Sections that stay as prose (问题定义、动机、综述引言) should open with a clear
+statement of the issue before the detailed evidence.
 
-- **First paragraph = 1–2 sentences that state the point.** Set up the tension, don't
-  exhaustively justify it yet. Details come in the following paragraphs.
-- **Squeeze filler from every setup paragraph.** Cut throat-clearing ("之所以…是因为…", long
-  appositive clauses, restated context). Keep every technical term and named method; delete the
-  connective padding around them. A background paragraph can usually lose ~⅓ of its words with
-  zero information loss.
-- Prefer active, compact phrasing: "VLM 已能 X，却仍 Y" beats "VLM 正在快速进步：……能够 X……
-  但它们本质上仍是 Y 的——".
-
-BAD — front-loaded wall (three long setup paragraphs, each ~150 字, before any payoff):
-```
-<p>语言与视觉的基座模型正在快速进步：Gemini 2.5、GPT-5 这类全能模型能够联合处理文本与视觉，
-并保持审慎的推理能力。但它们本质上仍是“离身”的——既不能……，也无法……。因此……。</p>
-<p>问题的根子在于数据。文本和 2D 视觉之所以较早获得……，是因为互联网提供了海量、分布丰富、
-易获取的……。而在具身场景中，……。于是主流思路转向……。</p>
-```
-GOOD — short hook, then tightened setup (same facts, ~⅓ fewer words, colon leads into the list):
-```
-<p>Gemini 2.5、GPT-5 等 VLM 已能联合处理文本与视觉、保持审慎推理，却仍是“离身”的：不能从物理
-交互中自我修正，也无法生成可执行动作。动作的理解与生成因此成为具身空间通往 AGI 的核心瓶颈。</p>
-<p>根源在数据。……主流思路因此转向把强 VLM 主干迁移到动作空间（OpenVLA、π0）。</p>
-<p>但迁移并不轻松：……作者把困难归结为三条根本鸿沟：</p>
-```
+- Start with a short statement of the problem or finding, then develop its mechanism,
+  evidence, and qualification. Paragraph length follows the argument; split a dense
+  block without deleting distinct technical claims or necessary context.
+- Remove repeated context and unsupported qualifiers. Prefer concrete, scoped claims
+  over claims that a method is "本质上" limited or that one factor is the sole "根源".
 
 ## Chinese punctuation and mixed-language typography
 
@@ -178,4 +160,7 @@ historical or causal explanation.
 ## Tone
 
 Knowledgeable peer explaining the paper to another researcher: precise, direct, assumes
-technical literacy, no marketing adjectives ("革命性的", "强大的") unless quoting the paper.
+technical literacy. Avoid casual section labels, marketing adjectives ("革命性的",
+"强大的"), and sweeping claims ("通往 AGI 的核心瓶颈") unless they are
+explicitly attributed and supported by the source. State the task, metric,
+comparison conditions, and uncertainty when reporting a result.

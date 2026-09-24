@@ -1,28 +1,52 @@
 # Content depth (phase 3)
 
-> Source rule: skill_notes §八 + §七. A deep-read must be concrete. Vague method
-> summaries are the failure mode this file prevents.
+> A deep-read must be concrete enough to reconstruct the source's main technical
+> argument and its evidential limits.
+
+## Put evidence next to the claim in the published note
+
+The evidence file is a checkpoint, not the reader's citation system. In the final
+document, cite the PDF page next to each central technical claim, dataset statistic,
+numerical comparison, and material limitation; include the source's figure, table,
+or equation number when one carries the evidence. Use a locator such as
+`（PDF 第 5 页，图 2）` or `（PDF 第 8 页，表 3）`. If printed and PDF pagination differ,
+keep `PDF 第 n 页` as the stable locator and add the printed page only when useful.
+Group a few adjacent claims under one citation only when the same source passage
+supports all of them. Cite separately when the evidence changes.
+
+Distinguish the authors' reported result or interpretation from this note's own
+calculation or assessment. Show the inputs and conditions for a derived comparison.
+For a parameter, data ratio, protocol detail, or ablation that materially affects
+interpretation but is absent from the source, write `原文未披露` rather than estimating
+or filling a plausible default. Do not turn an unknown into a claim of absence.
 
 ## Methods need real dimensions
 
-- Give the **input/output dimension and format** of each module, summarized in a **table**
-  — not "编码器提取特征" hand-waving. E.g. a table with columns 模块 / 输入 / 输出 /
-  说明, listing patch features, token dims, head outputs.
-- Name concrete hyperparameters when the paper gives them: number of blocks, heads,
-  hidden dim, MLP ratio, ViT variant, etc.
+- For model and algorithm papers, explain each material module's mechanism and role;
+  record its **input/output dimension and format when reported**. For a multi-module
+  architecture, summarize the reported interfaces in a table (模块 / 输入 / 输出 /
+  作用), including patch features, token dimensions, or head outputs where available.
+  Mark a missing dimension that matters to understanding as `原文未披露`; do not infer it.
+- Name concrete hyperparameters when the source gives them: number of blocks, heads,
+  hidden dimension, MLP ratio, ViT variant, etc. Separate training-only components
+  from the inference path and explain what each design choice changes.
 
-## Put a pipeline before the module table
+## Visualize multi-stage methods when useful
 
-When the method has at least three dependent stages or a meaningful output/training branch,
-place one concise pipeline **after the architecture explanation and immediately before the
-module input/output table**. On Feishu use a Mermaid whiteboard; on Markdown use a fenced
-Mermaid block.
+For a model or algorithm with at least three dependent stages or a meaningful
+output/training branch, place one concise pipeline **after the architecture
+explanation and before the module input/output table when one is warranted**. For a
+data-pipeline contribution, a process diagram may instead show the reported
+acquisition, processing, quality-control, and release/evaluation path; it does not
+require a model-module table. On Feishu use a Mermaid whiteboard; on Markdown use
+a fenced Mermaid block.
 
 - Show the main data path, module boundaries, output branches, and training-only branches.
-- Keep node labels short; leave tensor details and hyperparameters to the table below.
+- Keep node labels short; leave tensor details and hyperparameters to the
+  accompanying table or prose.
 - Complement rather than redraw the paper's architecture figure: the original figure preserves
   visual design, while the pipeline makes execution order and branching easy to scan.
-- Omit the pipeline for a one- or two-stage method where prose is already clearer.
+- Omit the diagram when prose already makes the stages and dependencies clear.
 - After publishing, export/preview the whiteboard once to verify that labels, arrows, and layout
   render correctly.
 
@@ -50,14 +74,32 @@ on its own centered line:
   move coefficients into a centered table.
 - On Markdown use `$$…$$` display math for these formulas, not inline `$…$`.
 
-## Dataset table: size / ratio / purpose
+## Training-data table: size / ratio / purpose
 
-For training data, give a table with **size, mixing ratio, and purpose/stage** — sourced
-from the paper's appendix.
+When the source reports training-data composition, give a table with **size, mixing
+ratio, and purpose/stage** using the main text and relevant appendix. If a value is
+not reported, mark the consequential gap `原文未披露` instead of calculating a ratio
+from incompatible counts.
 
 - If the paper only does single-stage finetuning, say so honestly ("监督用途") — **do not
   invent** pre-training / post-training stages that aren't there.
 - Distinguish geometry-only vs. motion-annotated datasets if the paper does.
+
+## Data-pipeline and benchmark contributions
+
+Apply this section when data governance, a data pipeline, a dataset, or a benchmark
+is the **primary contribution** identified in `doc-structure.md`. Explain the
+technical decisions that make the contribution work and the evidence that tests
+them; use only fields supported by the source.
+
+- For a data pipeline or governance report, trace reported provenance, collection
+  and selection rules, annotation or synthesis, deduplication, quality control,
+  mixtures, updates, and known coverage or privacy limits. Explain how each
+  decision affects the resulting data or downstream task when the report tests it.
+- For a dataset or benchmark report, define the tasks and units of evaluation,
+  splits, metric computation, allowed inputs, baseline setup, and any leakage or
+  contamination controls. Explain what the benchmark measures and what its
+  protocol cannot establish. Mark important undisclosed controls explicitly.
 
 ## Experiment tables: faithful but selective
 
@@ -66,4 +108,8 @@ from the paper's appendix.
   for the claim. State explicitly which secondary rows or columns were omitted.
 - Do not duplicate the same numbers in prose, a recreated table, and a figure. Choose the
   representation that makes the comparison clearest.
-- Bold / highlight the paper's method (winning row) — see `beautify.md`.
+- Keep the dataset, metric, evaluation conditions, and baseline identity alongside
+  each decisive number. Distinguish absolute differences (percentage points) from
+  relative change; do not call a result a win when the table does not show one.
+- Highlight the source's method row only when it helps the comparison, and identify
+  a best result only where the reported evidence supports it — see `beautify.md`.

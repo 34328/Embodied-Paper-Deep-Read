@@ -164,18 +164,28 @@ def cmd_batch(pdf, spec_path, manifest_path, default_zoom):
             document.close()
             sys.exit(f"batch item {position}: provide 'rect' or 'auto'")
         out = item["out"]
-        zoom = float(item.get("zoom", default_zoom))
-        try:
-            crop(page, rect, out, zoom)
-        except ValueError as error:
-            document.close()
-            sys.exit(f"batch item {position}: {error}")
-        anchor = item.get("anchor")
         width = int(item.get("width", 720))
-        caption = item.get("caption")
         if width <= 0:
             document.close()
             sys.exit(f"batch item {position}: width must be greater than zero")
+        clipped = rect & page.rect
+        if clipped.is_empty:
+            document.close()
+            sys.exit(f"batch item {position}: crop is outside the PDF page")
+        zoom = float(item.get("zoom", max(default_zoom, (2 * width) / clipped.width)))
+        try:
+            pixmap, _ = crop(page, rect, out, zoom)
+        except ValueError as error:
+            document.close()
+            sys.exit(f"batch item {position}: {error}")
+        if pixmap.width < 2 * width:
+            document.close()
+            sys.exit(
+                f"batch item {position}: {pixmap.width}px output is below 2x "
+                f"the {width}px display width; increase zoom"
+            )
+        anchor = item.get("anchor")
+        caption = item.get("caption")
         if manifest_path and (not anchor or not caption):
             document.close()
             sys.exit(f"batch item {position}: anchor and caption are required with --manifest")

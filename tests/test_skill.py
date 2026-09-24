@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -96,6 +97,25 @@ class ArxivTests(unittest.TestCase):
             self.assertTrue((output / "private-paper.pdf").exists())
             self.assertTrue((output / "private-paper_pages.jsonl").exists())
 
+    def test_local_pdf_can_be_staged_without_text_extraction(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            source = tmp / "source.pdf"
+            output = tmp / "paper"
+            document = fitz.open()
+            document.new_page().insert_text((72, 72), "Use MinerU for the content")
+            document.save(source)
+            document.close()
+            result = subprocess.run(
+                [sys.executable, str(SCRIPTS / "index_pdf.py"), str(source),
+                 "--dir", str(output), "--slug", "private-paper", "--no-text"],
+                capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue((output / "private-paper.pdf").exists())
+            self.assertFalse((output / "private-paper_pages.jsonl").exists())
+            self.assertIn("skipped (--no-text", result.stdout)
+
 
 class FigureTests(unittest.TestCase):
     def test_manifest_preserves_relative_path(self):
@@ -119,6 +139,7 @@ class FigureTests(unittest.TestCase):
             }]}, ensure_ascii=False), encoding="utf-8")
             figures.cmd_batch(str(pdf), str(spec), str(manifest), 1.0)
             self.assertIn("images/figure.png", manifest.read_text(encoding="utf-8"))
+            self.assertGreaterEqual(fitz.Pixmap(str(out)).width, 1440)
 
 
 class MineruCliTests(unittest.TestCase):
@@ -166,6 +187,24 @@ class MineruCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 2)
             self.assertIn("unsupported characters", result.stderr)
             self.assertNotIn("MINERU_TOKEN is not set", result.stderr)
+
+    def test_overlong_pdf_is_rejected_before_upload(self):
+        script = SCRIPTS / "mineru_parse_pdf.sh"
+        with tempfile.TemporaryDirectory() as tmp:
+            pdf = Path(tmp) / "long-report.pdf"
+            document = fitz.open()
+            for _ in range(201):
+                document.new_page()
+            document.save(pdf)
+            document.close()
+            result = subprocess.run(
+                ["bash", str(script), str(pdf), str(Path(tmp) / "mineru")],
+                capture_output=True, text=True,
+                env={**os.environ, "MINERU_TOKEN": "dummy-token"},
+            )
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("limit of 200 pages", result.stderr)
+            self.assertIn("No partial extraction was uploaded", result.stderr)
 
 
 class RenderFiguresTests(unittest.TestCase):
@@ -244,9 +283,43 @@ class RenderFiguresTests(unittest.TestCase):
             # A bbox that swallows body text below the figure: the classic mis-frame.
             pdf, mineru_dir = self.build_fixture(tmp, bbox=[72.0, 120.0, 522.0, 700.0])
             result = self.render(pdf, mineru_dir, Path(tmp) / "figs")
-            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertNotEqual(result.returncode, 0)
             self.assertIn("MISMATCH", result.stdout)
             self.assertIn("Inspect before publishing", result.stdout)
+
+    def test_verified_render_rewrites_manifest_to_high_resolution_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            pdf, mineru_dir = self.build_fixture(tmp)
+            manifest = Path(tmp) / "figures.manifest"
+            manifest.write_text(
+                f"<!-- FIG mineru/images/{self.IMAGE} | anchor:after-method | w=760 | cap:图 1：架构。 -->\n",
+                encoding="utf-8",
+            )
+            out = Path(tmp) / "figs_hires"
+            result = subprocess.run(
+                [sys.executable, str(SCRIPTS / "render_figures.py"), str(pdf), str(mineru_dir),
+                 "--out", str(out), "--pick", "bcedd339=Fig1:760",
+                 "--manifest", str(manifest)],
+                capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("figs_hires/Fig1.png", manifest.read_text(encoding="utf-8"))
+            self.assertNotIn(self.IMAGE, manifest.read_text(encoding="utf-8"))
+
+    def test_failed_ratio_check_keeps_provisional_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            pdf, mineru_dir = self.build_fixture(tmp, bbox=[72.0, 120.0, 522.0, 700.0])
+            manifest = Path(tmp) / "figures.manifest"
+            original = f"<!-- FIG mineru/images/{self.IMAGE} | anchor:after-method | w=760 | cap:图 1：架构。 -->\n"
+            manifest.write_text(original, encoding="utf-8")
+            result = subprocess.run(
+                [sys.executable, str(SCRIPTS / "render_figures.py"), str(pdf), str(mineru_dir),
+                 "--out", str(Path(tmp) / "figs_hires"),
+                 "--pick", "bcedd339=Fig1:760", "--manifest", str(manifest)],
+                capture_output=True, text=True,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(manifest.read_text(encoding="utf-8"), original)
 
     def test_missing_layout_json_explains_the_fix(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -366,6 +439,24 @@ class InstallerTests(unittest.TestCase):
             marker.write_text("keep me", encoding="utf-8")
             subprocess.run(args, capture_output=True, text=True, cwd=str(ROOT), check=True)
             self.assertTrue(marker.is_file(), "reinstall must not delete the dependency venv")
+
+    def test_install_can_create_both_official_roots(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp) / "home"
+            home.mkdir()
+            env = os.environ.copy()
+            env["HOME"] = str(home)
+            env.pop("CLAUDE_CONFIG_DIR", None)
+            result = subprocess.run(
+                ["bash", str(self.INSTALLER), "--agent", "both", "--skip-deps"],
+                capture_output=True,
+                text=True,
+                cwd=str(ROOT),
+                env=env,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            for root in (home / ".claude/skills", home / ".agents/skills"):
+                self.assertTrue((root / "embodied-paper-deep-read/SKILL.md").is_file())
 
 
 if __name__ == "__main__":

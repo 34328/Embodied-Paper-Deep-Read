@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Locate an interpreter that can import PyMuPDF, so `python3 script.py` just works.
+"""Locate an interpreter with the skill's PDF and figure dependencies.
 
 `install.sh` falls back to a private virtualenv at `<skill-dir>/.venv` when the system
 interpreter is externally managed (PEP 668). The documented commands still say
@@ -12,12 +12,12 @@ import sys
 
 REEXEC_GUARD = "EPDR_PYMUPDF_REEXEC"
 
-HINT = """PyMuPDF is not available for this interpreter:
+HINT = """PyMuPDF and Pillow are not both available for this interpreter:
   {exe}
 Install the dependencies with the repository installer:
   bash install.sh
 or install it directly for this interpreter:
-  {exe} -m pip install 'PyMuPDF>=1.23,<2'"""
+  {exe} -m pip install 'PyMuPDF>=1.23,<2' 'Pillow>=9,<13'"""
 
 
 def venv_python():
@@ -33,9 +33,10 @@ def venv_python():
 
 
 def ensure_pymupdf():
-    """Import PyMuPDF, re-executing into the skill's own venv when the current one lacks it."""
+    """Re-execute into the skill venv when either PDF dependency is missing."""
     try:
         import fitz  # noqa: F401
+        from PIL import Image  # noqa: F401
         return
     except ImportError:
         pass

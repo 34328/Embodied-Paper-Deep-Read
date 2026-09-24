@@ -8,16 +8,19 @@ SKILL_NAME="embodied-paper-deep-read"
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 SOURCE_DIR="$REPO_ROOT/$SKILL_NAME"
 
-CLAUDE_SKILLS="$HOME/.claude/skills"
+CLAUDE_SKILLS="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills"
 CODEX_SKILLS="$HOME/.agents/skills"
+LEGACY_CODEX_SKILLS="$HOME/.codex/skills"
+LEGACY_SKILL_NAME="paper-deep-read"
 TOKEN_FILE="$HOME/.mineru_token"
 
-# Directory contents this installer owns. Anything else in the target (a .venv,
-# user edits) is left alone.
+# Directory contents this installer refreshes. The private dependency venv and
+# any files outside this list are left alone.
 MANAGED_DIRS="scripts references publishers agents"
 MANAGED_FILES="SKILL.md LICENSE requirements.txt requirements-dev.txt"
 
 DEST=""
+AGENT="auto"
 DO_CHECK=false
 DO_SET_TOKEN=false
 DO_UNINSTALL=false
@@ -29,16 +32,19 @@ usage() {
 Usage: bash install.sh [options]
 
 Options:
-  --dest DIR      Install into DIR instead of the auto-detected skills directories
+  --agent NAME    claude, codex, both, or auto (default)
+  --dest DIR      Install into DIR instead of an agent's skills directory
   --check         Report installation status only, change nothing
   --set-token     Store a MinerU API token in ~/.mineru_token (mode 600)
   --skip-deps     Copy the skill but do not touch Python dependencies
   --uninstall     Remove the installed skill (leaves ~/.mineru_token alone)
   -h, --help      Show this help
 
-With no options: detect the skill directories of Claude Code (~/.claude/skills)
-and Codex (~/.agents/skills), install into the ones that exist, resolve the
-PyMuPDF dependency, then print a status summary.
+With no options: detect installed agents, install into their user skill roots,
+resolve Python dependencies, and print a status summary. MinerU is required;
+use --set-token to finish setup after obtaining your own token. The legacy
+Codex root ~/.codex/skills and old skill name paper-deep-read are reported,
+but never modified automatically.
 EOF
 }
 
@@ -51,6 +57,8 @@ die()  { printf '\033[31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    --agent) [ $# -ge 2 ] || die "--agent needs claude, codex, both, or auto"; AGENT=$2; shift 2 ;;
+    --agent=*) AGENT=${1#--agent=}; shift ;;
     --dest) [ $# -ge 2 ] || die "--dest needs a directory"; DEST=$2; shift 2 ;;
     --dest=*) DEST=${1#--dest=}; shift ;;
     --check) DO_CHECK=true; shift ;;
@@ -61,6 +69,12 @@ while [ $# -gt 0 ]; do
     *) usage >&2; die "unknown option: $1" ;;
   esac
 done
+
+case "$AGENT" in
+  claude|codex|both|auto) ;;
+  *) die "--agent must be claude, codex, both, or auto" ;;
+esac
+[ -z "$DEST" ] || [ "$AGENT" = auto ] || die "--dest and --agent cannot be combined"
 
 [ -f "$SOURCE_DIR/SKILL.md" ] || \
   die "run this from the repository root (expected $SOURCE_DIR/SKILL.md)"
@@ -93,7 +107,7 @@ set_token() {
   ( umask 077; printf '%s\n' "$token" > "$TOKEN_FILE" )
   chmod 600 "$TOKEN_FILE"
   ok "wrote $TOKEN_FILE (mode 600)"
-  say "Tokens last 90 days; re-run this command when MinerU returns 401."
+  say "If MinerU later returns 401, create a fresh token and run this command again."
 }
 
 # ---------------------------------------------------------------- targets
@@ -104,24 +118,32 @@ detect_targets() {
     printf '%s\n' "$DEST"
     return 0
   fi
-  found=""
-  if [ -d "$CLAUDE_SKILLS" ]; then
-    found="$found$CLAUDE_SKILLS
-"
+  case "$AGENT" in
+    claude) printf '%s\n' "$CLAUDE_SKILLS"; return 0 ;;
+    codex) printf '%s\n' "$CODEX_SKILLS"; return 0 ;;
+    both) printf '%s\n%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS"; return 0 ;;
+  esac
+
+  # Existing skill roots alone are not enough: a freshly installed second
+  # agent may not have created its skills directory yet.
+  have_claude=false
+  have_codex=false
+  if command -v claude >/dev/null 2>&1 || [ -d "$CLAUDE_SKILLS" ]; then
+    have_claude=true
   fi
-  if [ -d "$CODEX_SKILLS" ]; then
-    found="$found$CODEX_SKILLS
-"
+  if command -v codex >/dev/null 2>&1 || [ -d "$CODEX_SKILLS" ] || [ -d "$LEGACY_CODEX_SKILLS" ]; then
+    have_codex=true
   fi
-  if [ -n "$found" ]; then
-    printf '%s' "$found"
+  if [ "$have_claude" = true ] || [ "$have_codex" = true ]; then
+    [ "$have_claude" = false ] || printf '%s\n' "$CLAUDE_SKILLS"
+    [ "$have_codex" = false ] || printf '%s\n' "$CODEX_SKILLS"
     return 0
   fi
   if [ ! -t 0 ]; then
     printf '%s\n%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS"
     return 0
   fi
-  printf 'No agent skills directory found yet. Where should the skill go?\n' >&2
+  printf 'No supported agent found. Where should the skill go?\n' >&2
   printf '  1) Claude Code   %s\n' "$CLAUDE_SKILLS" >&2
   printf '  2) Codex         %s\n' "$CODEX_SKILLS" >&2
   printf '  3) Both (default)\n' >&2
@@ -176,41 +198,60 @@ uninstall_from() {
 resolve_python() {
   PYTHON=$(command -v python3 2>/dev/null || true)
   [ -n "$PYTHON" ] || die "python3 not found. Install Python 3.9 or newer, then re-run."
-  if ! "$PYTHON" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)' 2>/dev/null; then
+  if ! python_supported "$PYTHON"; then
     die "$PYTHON is older than Python 3.9. Install a newer Python, then re-run."
   fi
 }
 
-has_pymupdf() {
-  "$1" -c 'import fitz' >/dev/null 2>&1
+python_supported() {
+  "$1" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)' >/dev/null 2>&1
 }
 
-# Install PyMuPDF so that a plain `python3 <skill>/scripts/x.py` can import it.
-# Ladder: already importable -> pip -> pip --user -> private venv per install.
+has_deps() {
+  "$1" -c '
+import re
+import sys
+from importlib import metadata
+import fitz
+from PIL import Image
+
+def pair(package):
+    match = re.match(r"^(\d+)\.(\d+)", metadata.version(package))
+    return tuple(map(int, match.groups())) if match else (0, 0)
+
+ok = hasattr(fitz, "open") and hasattr(Image, "open")
+ok = ok and (1, 23) <= pair("PyMuPDF") < (2, 0)
+ok = ok and (9, 0) <= pair("Pillow") < (13, 0)
+sys.exit(0 if ok else 1)
+' >/dev/null 2>&1
+}
+
+# Install the complete pinned dependency set. Plain `python3 <skill>/scripts/x.py`
+# uses the private venv through scripts/_pymupdf.py when global deps are absent.
 ensure_deps() {
-  head_ "Python dependency"
+  head_ "Python dependencies"
   resolve_python
   say "interpreter: $PYTHON"
 
-  if has_pymupdf "$PYTHON"; then
-    ok "PyMuPDF $("$PYTHON" -c 'import fitz; print(fitz.__doc__.split()[1].rstrip(":"))' 2>/dev/null || echo present)"
+  if has_deps "$PYTHON"; then
+    ok "PyMuPDF and Pillow importable at supported versions"
     return 0
   fi
 
-  say "PyMuPDF missing, installing..."
-  if "$PYTHON" -m pip install -r "$SOURCE_DIR/requirements.txt" 2>/dev/null && has_pymupdf "$PYTHON"; then
+  say "PyMuPDF or Pillow missing/unsupported, installing..."
+  if "$PYTHON" -m pip install -r "$SOURCE_DIR/requirements.txt" >/dev/null 2>&1 && has_deps "$PYTHON"; then
     ok "installed with pip"
     return 0
   fi
-  if "$PYTHON" -m pip install --user -r "$SOURCE_DIR/requirements.txt" 2>/dev/null && has_pymupdf "$PYTHON"; then
+  if "$PYTHON" -m pip install --user -r "$SOURCE_DIR/requirements.txt" >/dev/null 2>&1 && has_deps "$PYTHON"; then
     ok "installed with pip --user"
     return 0
   fi
 
-  # PEP 668 externally-managed interpreter: fall back to a venv the scripts
-  # re-exec into by themselves (see scripts/_pymupdf.py).
-  warn "this interpreter is externally managed, using a private virtualenv instead"
-  deps_ok=false
+  # PEP 668, permission errors, or an incompatible shared interpreter can all
+  # require a private venv. Verify each installed agent independently.
+  warn "could not use the current Python environment; trying private virtualenvs"
+  deps_ok=true
   saved_ifs=$IFS
   IFS=$'\n'
   for root in $TARGETS; do
@@ -221,75 +262,136 @@ ensure_deps() {
       if ! "$PYTHON" -m venv "$venv" 2>/dev/null; then
         bad "could not create $venv"
         say "On Debian/Ubuntu install the venv module first: sudo apt install python3-venv"
+        deps_ok=false
         continue
       fi
     fi
     "$venv/bin/python3" -m pip install --quiet --upgrade pip >/dev/null 2>&1 || true
-    if "$venv/bin/python3" -m pip install --quiet -r "$SOURCE_DIR/requirements.txt" && has_pymupdf "$venv/bin/python3"; then
+    if "$venv/bin/python3" -m pip install --quiet -r "$SOURCE_DIR/requirements.txt" && has_deps "$venv/bin/python3"; then
       ok "installed into $venv"
-      deps_ok=true
     else
-      bad "failed to install PyMuPDF into $venv"
+      bad "failed to install PyMuPDF and Pillow into $venv"
+      deps_ok=false
     fi
     IFS=$'\n'
   done
   IFS=$saved_ifs
   if [ "$deps_ok" != true ]; then
-    die "could not install PyMuPDF. See the troubleshooting table in README.md."
+    die "could not install Python dependencies for every target. See README.md."
   fi
 }
 
 # ---------------------------------------------------------------- status
 
-status() {
-  head_ "Status"
-
-  installed=""
-  for root in "$CLAUDE_SKILLS" "$CODEX_SKILLS" ${DEST:+"$DEST"}; do
-    if [ -f "$root/$SKILL_NAME/SKILL.md" ]; then
-      ok "skill installed: $root/$SKILL_NAME"
-      installed="yes"
-    fi
-  done
-  if [ -z "$installed" ]; then
-    bad "skill not installed anywhere yet — run: bash install.sh"
+status_targets() {
+  if [ -n "$DEST" ]; then
+    printf '%s\n' "$DEST"
+    return 0
   fi
+  case "$AGENT" in
+    claude) printf '%s\n' "$CLAUDE_SKILLS" ;;
+    codex) printf '%s\n' "$CODEX_SKILLS" ;;
+    *) printf '%s\n%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS" ;;
+  esac
+}
+
+token_file_secure() {
+  [ -f "$TOKEN_FILE" ] && [ ! -L "$TOKEN_FILE" ] || return 1
+  python3 - "$TOKEN_FILE" <<'PY' >/dev/null 2>&1
+import os, stat, sys
+info = os.stat(sys.argv[1])
+sys.exit(0 if stat.S_ISREG(info.st_mode) and stat.S_IMODE(info.st_mode) == 0o600 else 1)
+PY
+}
+
+legacy_status() {
+  local root item
+  for root in "$CLAUDE_SKILLS" "$CODEX_SKILLS" "$LEGACY_CODEX_SKILLS"; do
+    for item in "$LEGACY_SKILL_NAME"; do
+      if [ -f "$root/$item/SKILL.md" ]; then
+        warn "older skill still present: $root/$item"
+      fi
+    done
+  done
+  if [ -f "$LEGACY_CODEX_SKILLS/$SKILL_NAME/SKILL.md" ]; then
+    warn "skill in legacy Codex root: $LEGACY_CODEX_SKILLS/$SKILL_NAME"
+  fi
+  say "Legacy copies are never moved or deleted automatically; see README.md."
+}
+
+status() {
+  local roots=$1
+  local root target py venv ready saved_ifs
+  head_ "Status"
+  ready=true
 
   py=$(command -v python3 2>/dev/null || true)
   if [ -z "$py" ]; then
-    bad "python3 not found"
-  elif has_pymupdf "$py"; then
-    say "python3: $py"
-    ok "PyMuPDF importable"
+    bad "python3 not found (Python 3.9+ required)"
+    ready=false
+  elif ! python_supported "$py"; then
+    bad "python3 is older than 3.9: $py"
+    ready=false
   else
     say "python3: $py"
-    venv_hit=""
-    for root in "$CLAUDE_SKILLS" "$CODEX_SKILLS" ${DEST:+"$DEST"}; do
-      if [ -x "$root/$SKILL_NAME/.venv/bin/python3" ]; then
-        venv_hit="$root/$SKILL_NAME/.venv"
-      fi
-    done
-    if [ -n "$venv_hit" ]; then
-      ok "PyMuPDF in private virtualenv ($venv_hit); scripts re-exec into it automatically"
-    else
-      bad "PyMuPDF not importable — run: bash install.sh"
-    fi
   fi
+
+  saved_ifs=$IFS
+  IFS=$'\n'
+  for root in $roots; do
+    IFS=$saved_ifs
+    target="$root/$SKILL_NAME"
+    if [ ! -f "$target/SKILL.md" ]; then
+      bad "skill missing: $target"
+      ready=false
+    else
+      ok "skill installed: $target"
+    fi
+    venv="$target/.venv/bin/python3"
+    if [ -n "$py" ] && python_supported "$py" && has_deps "$py"; then
+      ok "PyMuPDF and Pillow ready for $root (current Python)"
+    elif [ -n "$py" ] && python_supported "$py" && [ -x "$venv" ] && has_deps "$venv"; then
+      ok "PyMuPDF and Pillow ready for $root (private virtualenv)"
+    else
+      bad "PyMuPDF/Pillow missing or unsupported for $root — run: bash install.sh --agent <agent>"
+      ready=false
+    fi
+    IFS=$'\n'
+  done
+  IFS=$saved_ifs
 
   if [ -n "${MINERU_TOKEN:-}" ]; then
-    ok "MinerU token: MINERU_TOKEN is set in this shell"
+    ok "MinerU token: MINERU_TOKEN is set (validity not checked)"
+  elif token_file_secure; then
+    ok "MinerU token: $TOKEN_FILE (mode 600; validity not checked)"
   elif [ -f "$TOKEN_FILE" ]; then
-    ok "MinerU token: $TOKEN_FILE"
+    bad "MinerU token file must be a regular mode-600 file: $TOKEN_FILE"
+    ready=false
   else
-    warn "MinerU token: not configured (optional) — run: bash install.sh --set-token"
+    bad "MinerU token missing (required) — run: bash install.sh --set-token"
+    ready=false
   fi
 
+  head_ "Feishu publishing"
+  if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1 && command -v npx >/dev/null 2>&1; then
+    ok "Node.js, npm, and npx found"
+  else
+    warn "Node.js/npm/npx missing — ask your agent to help install Node.js for Feishu publishing"
+  fi
   if command -v lark-cli >/dev/null 2>&1; then
     ok "lark-cli: $(command -v lark-cli)"
+    if lark-cli auth status --json --verify >/dev/null 2>&1; then
+      ok "Feishu login verified (document scopes checked when publishing)"
+    else
+      warn "Feishu login not verified — ask your agent: 帮我配置飞书发布"
+    fi
   else
-    warn "lark-cli: not installed (only needed to publish to Feishu)"
-    say "  ask your agent: 帮我配置飞书发布"
+    warn "lark-cli not installed — ask your agent: 帮我配置飞书发布"
   fi
+
+  head_ "Older installations"
+  legacy_status
+  [ "$ready" = true ]
 }
 
 # ---------------------------------------------------------------- main
@@ -297,26 +399,30 @@ status() {
 if [ "$DO_SET_TOKEN" = true ]; then
   set_token
   if [ "$DO_CHECK" = true ]; then
-    status
+    status "$(status_targets)"
   fi
   exit 0
 fi
 
 if [ "$DO_UNINSTALL" = true ]; then
   head_ "Uninstall"
-  if [ -n "$DEST" ]; then
-    uninstall_from "$DEST"
-  else
-    uninstall_from "$CLAUDE_SKILLS"
-    uninstall_from "$CODEX_SKILLS"
-  fi
+  TARGETS=$(status_targets)
+  saved_ifs=$IFS
+  IFS=$'\n'
+  for root in $TARGETS; do
+    IFS=$saved_ifs
+    uninstall_from "$root"
+    IFS=$'\n'
+  done
+  IFS=$saved_ifs
   say "~/.mineru_token was left in place; delete it yourself if you want it gone."
+  legacy_status
   exit 0
 fi
 
 if [ "$DO_CHECK" = true ]; then
-  status
-  exit 0
+  status "$(status_targets)"
+  exit $?
 fi
 
 TARGETS=$(detect_targets)
@@ -339,11 +445,16 @@ else
   ensure_deps
 fi
 
-status
+if status "$TARGETS"; then
+  ok "Ready to use MinerU. Feishu publishing can be configured separately."
+else
+  warn "Skill files were installed, but required setup is incomplete. Follow the red status items above."
+fi
 
 head_ "Next"
 say "1. Restart your agent, then check that the skill is listed."
-say "2. Ask it to deep-read a paper, for example:"
+say "2. If MinerU is missing, create a token and run: bash install.sh --set-token"
+say "3. Ask it to deep-read a paper, for example:"
 say "     用 embodied-paper-deep-read 精读这篇论文：https://arxiv.org/abs/2503.20020"
-say "3. Optional setup (MinerU token, Feishu publishing): see README.md"
+say "4. For Feishu publishing, ask your agent: 帮我配置飞书发布"
 printf '\n'

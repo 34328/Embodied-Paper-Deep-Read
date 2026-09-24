@@ -6,7 +6,8 @@
 ## Publisher contract (applies to any backend)
 
 A publisher consumes the two backend-agnostic artifacts from phases 1–3:
-1. **document body** — the structured deep-read text (chapter skeleton, tables, callouts).
+1. **document body** — the structured deep-read text (chapter skeleton, tables, callouts),
+   including page or figure/table locators for pivotal technical and quantitative claims.
 2. **figure manifest** — the `<!-- FIG file | anchor | w | cap -->` lines.
 
 and produces a rendered document with figures placed at their anchors and your Chinese
@@ -61,8 +62,10 @@ Four things that guide will not tell you, specific to this skill:
   parallel one; `--force-init` only if the user explicitly wants a separate app.
 - **Never take an app secret through chat.** `config init` reads it via `--app-secret-stdin`.
 
-If Node.js is missing, say how to install it for the user's OS and stop there — do not install
-a runtime unasked.
+If Node.js is missing, explain how to install it for the user's OS; do not install a runtime
+unasked. When Feishu was only the default destination, switch to the local Markdown publisher
+and tell the user where the note will be saved. If the user explicitly requested Feishu, stop
+until Node.js is available.
 
 **MUST read the version-matched embedded skill before writing** — do not rely on this
 file for exact command flags, they can change:
@@ -83,8 +86,15 @@ agent-driving notes; prefer them over this file when they disagree.
    - Default landing location is the user's **我的文档库 / My Library**. Do not create a new
      Feishu document without `--parent-position my_library` unless the user explicitly provides
      another folder/wiki parent.
-   - If authentication or required scopes are missing, stop and give the user the official
-     setup command. Do not silently publish elsewhere.
+   - If authentication or required scopes are missing, follow "First-time setup" above: run
+     the official setup steps and start the browser authorization for the user. Continue after
+     authorization succeeds. If setup cannot be completed, state the exact failed step. When
+     Feishu was only the default destination, use local Markdown; when the user explicitly
+     requested Feishu, stop without publishing elsewhere.
+   - Follow the source-reference rule in `references/doc-structure.md`. For a PDF without an
+     arXiv ID, use an available DOI, publisher, or official project link. If no accessible
+     public URL exists, identify the source PDF by title or filename without inventing a link
+     or exposing the user's local filesystem path in Feishu.
    - Existing doc, full rewrite: `docs +update --command overwrite`.
    - ⚠️ **`overwrite` WIPES every already-inserted `<img>`.** (Mermaid whiteboards
      survive; raster figures do not.) So always (re)insert figures *after* any text
@@ -118,10 +128,10 @@ agent-driving notes; prefer them over this file when they disagree.
      `--file` for on-disk crops.
    - media-insert prints progress lines to stdout — **grep for the block id**, don't feed
      the stream to `json.load`.
-   - Always pass `--align center`. All tables must use the current document's actual usable
-     width and centered cell paragraphs. Derive width from a fetched full-width/auto-layout
-     table instead of hardcoding a constant. All display formulas must be standalone centered
-     paragraphs.
+   - Always pass `--align center`. Give tables centered cell paragraphs and a full-width
+     appearance. Derive the usable width from a fetched full-width/auto-layout table when one
+     exists; otherwise use stable proportional column widths as in `references/beautify.md`.
+     All display formulas must be standalone centered paragraphs.
 
 4. **Verify once after all moves.** Re-fetch the outline and affected sections. Confirm that:
    - every numbered H1/H2/H3 has `seq` + `seq-level="auto"` in a targeted `--detail full` fetch;
@@ -136,8 +146,9 @@ agent-driving notes; prefer them over this file when they disagree.
 ## Block ID lifecycle (don't reuse stale IDs)
 
 After `overwrite` / `block_replace` / `block_delete`, the affected old block IDs are
-dead — re-fetch with `with-ids` before referencing them. After insert/copy, the new IDs
-only exist post-fetch. See lark-doc's "Block ID 生命周期" section.
+dead — re-fetch with `with-ids` before referencing them. `media-insert` returns its new block
+ID for the immediate move in step 3; if that output does not provide a usable ID, fetch the
+affected section before moving it. See lark-doc's "Block ID 生命周期" section.
 
 For a long publish, keep a local `publish-state.json` containing the document ID, current
 text-revision marker, resolved anchor map, and successfully inserted figure filenames/block

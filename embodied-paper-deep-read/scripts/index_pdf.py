@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Copy and index a local PDF without uploading it to a third-party service."""
+"""Stage a local PDF; optionally build a page index for source verification."""
 
 import argparse
 import hashlib
@@ -36,12 +36,13 @@ def atomic_copy(source, destination):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Copy a local PDF into a paper folder and build page-aware text."
+        description="Copy a local PDF into a paper folder; optionally build page-aware text."
     )
     parser.add_argument("pdf", help="path to the source PDF")
     parser.add_argument("--dir", required=True, help="paper output directory")
     parser.add_argument("--slug", help="filename stem (default: source filename)")
     parser.add_argument("--title", help="optional paper title for metadata")
+    parser.add_argument("--no-text", action="store_true", help="stage the PDF without extracting text")
     parser.add_argument("--refresh", action="store_true", help="rebuild the cached copy and index")
     args = parser.parse_args()
 
@@ -68,15 +69,17 @@ def main():
     elif source == destination:
         destination = source
 
-    needs_index = args.refresh or not cache_matches or not (
-        os.path.exists(txt_path) and os.path.exists(jsonl_path)
-    )
-    if needs_index:
-        pages, empty_pages = dump_page_text(destination, txt_path, jsonl_path)
-    else:
-        with open(jsonl_path, encoding="utf-8") as handle:
-            pages = sum(1 for _ in handle)
-        empty_pages = 0
+    pages = None
+    empty_pages = 0
+    if not args.no_text:
+        needs_index = args.refresh or not cache_matches or not (
+            os.path.exists(txt_path) and os.path.exists(jsonl_path)
+        )
+        if needs_index:
+            pages, empty_pages = dump_page_text(destination, txt_path, jsonl_path)
+        else:
+            with open(jsonl_path, encoding="utf-8") as handle:
+                pages = sum(1 for _ in handle)
 
     write_json(
         meta_path,
@@ -84,12 +87,15 @@ def main():
             "source_type": "local-pdf",
             "sha256": source_hash,
             "title": args.title or metadata.get("title", ""),
-            "pages": pages,
+            **({"pages": pages} if pages is not None else {}),
         },
     )
     print(f"PDF        : {destination}  ({'cache' if cache_matches else 'copied'})")
-    print(f"full text  : {txt_path}  ({pages} pages)")
-    print(f"page index : {jsonl_path}")
+    if pages is not None:
+        print(f"full text  : {txt_path}  ({pages} pages)")
+        print(f"page index : {jsonl_path}")
+    else:
+        print("text index : skipped (--no-text; MinerU is required for content extraction)")
     print(f"metadata   : {meta_path}")
     if empty_pages:
         print(f"warning    : {empty_pages}/{pages} pages have no extractable text; OCR may be needed")

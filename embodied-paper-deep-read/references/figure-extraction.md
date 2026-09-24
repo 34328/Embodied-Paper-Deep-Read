@@ -1,33 +1,34 @@
 # Figure extraction (phase 2)
 
-Prefer figures already extracted by MinerU into `images/` — but **select** from them, do not
-publish them as-is: MinerU caps its own images near ~1100px wide, which renders soft at 2x
-(see "Resolution" below). Re-render the selected figures from the PDF at MinerU's own bboxes
-instead. Crop by hand with PyMuPDF only when MinerU output is missing, split incorrectly, low
-quality, or mismatched with the caption. Avoid web screenshots and repeated full-page renders.
+Use MinerU's `full.md` image references and `images/` to **select** figures, but do not publish
+the extracted images as-is: their resolution may be too low at 2x display density. Re-render
+selected figures from the source PDF at MinerU's own boxes when `layout.json` supplies usable
+ones. When a new MinerU result has no layout boxes, or a box is missing, split, or wrong, crop
+the selected figure from the source PDF with PyMuPDF. Avoid web screenshots and repeated
+full-page renders. PyMuPDF's role here is image work, not parsing the paper's body.
 
 ## Inventory once
 
 ```bash
-rg -n '!\[|<img' <paper-folder>/mineru/full.md
-find <paper-folder>/mineru/images -maxdepth 1 -type f | sort
+rg -n '!\[|<img' "<paper-folder>/mineru/full.md"
+find "<paper-folder>/mineru/images" -maxdepth 1 -type f | sort
 ```
 
 Use Markdown image references as the primary inventory. Match each image to nearby caption
 or section text. Select overview, architecture, decisive qualitative comparison, useful
 ablation, and failure cases. Usually 3–6 figures are enough; each must add information.
 
-If the MinerU task is still pending, wait for it to finish before producing the figure
-manifest. Do not independently render pages or crop paper figures while MinerU is pending.
-Only consider PDF cropping after MinerU output is available and a selected figure is missing,
-badly split, or unusable; when the fallback is not obvious, ask the user before replacing the
-MinerU asset with a manual crop.
+If the MinerU task is still pending, wait for it to finish before finalizing the figure
+selection. If MinerU fails, stop the deep-read per `SKILL.md`; PDF image cropping cannot replace
+the required body parse. Once MinerU body output is available, use PDF cropping for selected
+figures whose layout boxes are absent or unusable. Resolve figure identity against the PDF page
+and caption before publishing.
 
 If MinerU does not provide usable figures, fall back to PDF inventory:
 
 ```bash
-python3 <skill-dir>/scripts/extract_figures.py paper.pdf \
-  --scan-all figures.json
+python3 <skill-dir>/scripts/extract_figures.py "<paper-folder>/<slug>.pdf" \
+  --scan-all "<paper-folder>/figures.json"
 ```
 
 The fallback inventory records per-page caption lines and raster bboxes.
@@ -47,36 +48,42 @@ The fix is to keep MinerU's *boundaries* and redo only the *rasterization*:
 
 ```bash
 python3 <skill-dir>/scripts/render_figures.py \
-    <paper.pdf> <paper-folder>/mineru --out figs_hires \
+    "<paper-folder>/<slug>.pdf" "<paper-folder>/mineru" \
+    --out "<paper-folder>/figs_hires" \
+    --manifest "<paper-folder>/figures.manifest" \
     --pick bcedd339=Fig1:760 --pick f58ef364=Fig10:760
 ```
 
 `--pick <filename-prefix>=<label>[:<display-width>]`; omit every `--pick` to render all of them.
 Reads `mineru/layout.json`, renders each bbox at `display-width × 2`, and prints a
-ratio-check table. Publish `figs_hires/*.png` and keep the display width unchanged — the
-uplift is pixel density, not layout.
+ratio-check table. On success, `--manifest` atomically replaces the selected MinerU-image paths
+in `figures.manifest` with the corresponding `figs_hires/*.png` paths. Keep the display width
+unchanged — the uplift is pixel density, not layout. If rendering fails, the provisional
+manifest is unchanged; fix the selection or use the PDF crop fallback before publishing.
 
 Three rules make this safe, each learned from a real failure:
 
-- **Never derive figure boundaries yourself.** Heuristics over text blocks and drawing rects
-  mis-frame figures: one pass swallowed the paper title, authors, and URL into the teaser; the
-  next clipped a side-by-side panel in half. `layout.json` carries MinerU's own detected bbox
-  per figure (same `pdf_info` structure as `middle.json`) — use it as the authority. Given a
-  correct rect, rendering is deterministic and safe.
+- **Use MinerU's box when it is present and correct.** Heuristics over text blocks and drawing
+  rects can mis-frame figures: one pass swallowed the paper title, authors, and URL into the
+  teaser; the next clipped a side-by-side panel in half. `layout.json` carries MinerU's detected
+  box per figure (same `pdf_info` structure as `middle.json`). Check the crop against the source
+  PDF; a visually wrong box needs the PDF crop fallback.
 - **Map by image filename, never by figure number.** MinerU mis-assigns caption numbers when
   two panels sit side by side (it labeled a Figure 15 panel as "Figure 14"). The filename it
   wrote for a bbox is unambiguous; the caption number is not.
-- **Cross-check the aspect ratio** against MinerU's own raster for that filename. Matching
-  ratios (within ~4%) prove you cropped the same region at higher resolution. The script flags
-  mismatches — inspect those visually before publishing, and always eyeball the teaser plus any
-  figure whose caption cites specific numbers.
+- **Cross-check the aspect ratio** against MinerU's own raster for that filename. A mismatch
+  can reveal a wrong box, but a match cannot prove the region is correct. Rendering now fails
+  without updating the manifest if the ratio check fails or the comparison image is missing.
+  Inspect each selected result against the PDF, especially the teaser and figures whose
+  captions cite specific numbers.
 
-If `layout.json` is missing, the MinerU result predates this skill keeping it. Re-run
-`scripts/mineru_parse_pdf.sh` with `MINERU_REFRESH=true` to fetch it.
+If `layout.json` is missing from a newly completed MinerU result, the model may not emit it.
+Do not re-upload only to seek layout data; use the PDF crop fallback. Refresh an older cached
+result only when you know that its original package contained layout data that was discarded.
 
 ## Fast path and vector fallback
 
-- If MinerU has a bbox for the figure, re-render it per "Resolution" above rather than
+- If MinerU has a correct bbox for the figure, re-render it per "Resolution" above rather than
   publishing the JPEG.
 - If MinerU split a composite figure into useful panels, either select the panel that supports
   the argument or recreate a compact comparison by using the original PDF crop.
@@ -89,14 +96,17 @@ If `layout.json` is missing, the MinerU result predates this skill keeping it. R
 
 ## Manifest from MinerU images
 
-Create a manifest directly from selected MinerU image files:
+Create a provisional `<paper-folder>/figures.manifest` from the selected MinerU image files.
+Paths are relative to the manifest's parent folder:
 
 ```text
-<!-- FIG images/figure_2.png | anchor:after-summary | w=720 | cap:图 1：…… -->
+<!-- FIG mineru/images/figure_2.png | anchor:after-summary | w=720 | cap:图 1：…… -->
 ```
 
-Keep paths relative to the Markdown package or the final working directory. If publishing to
-Feishu, use the same manifest contract as cropped images: `file | anchor | width | caption`.
+After successful re-rendering, `--manifest` replaces the file path with, for example,
+`figs_hires/Fig1.png`. When using PDF crops, write the crop's final path instead. Publish only
+after every manifest path resolves to a final high-resolution file inside `<paper-folder>`;
+the same `file | anchor | width | caption` contract applies to Feishu and Markdown.
 
 ## PDF batch crop fallback
 
@@ -104,9 +114,9 @@ Create a JSON specification:
 
 ```json
 {"figures": [
-  {"page": 2, "auto": 0, "out": "fig1.png", "anchor": "after-summary",
+  {"page": 2, "auto": 0, "out": "<paper-folder>/figs_hires/fig1.png", "anchor": "after-summary",
    "width": 720, "caption": "图 1：……"},
-  {"page": 6, "rect": [40, 70, 555, 310], "out": "fig2.png",
+  {"page": 6, "rect": [40, 70, 555, 310], "out": "<paper-folder>/figs_hires/fig2.png",
    "anchor": "after-architecture", "width": 720, "caption": "图 2：……"}
 ]}
 ```
@@ -114,15 +124,25 @@ Create a JSON specification:
 Run once:
 
 ```bash
-python3 <skill-dir>/scripts/extract_figures.py paper.pdf \
-  --batch crop-spec.json --manifest figures.manifest
+python3 <skill-dir>/scripts/extract_figures.py "<paper-folder>/<slug>.pdf" \
+  --batch "<paper-folder>/crop-spec.json" \
+  --manifest "<paper-folder>/crop-figures.manifest"
 ```
 
-The manifest contains durable lines:
+The batch crop defaults to 3× PDF scale. Set an entry's `zoom` higher when needed so its PNG
+has about twice the intended display width, and never set the display width above the PNG's
+actual pixel width. Inspect the cropped image against the original PDF page and caption.
+
+The crop manifest contains durable lines:
 
 ```text
-<!-- FIG fig1.png | anchor:after-summary | w=720 | cap:图 1：…… -->
+<!-- FIG figs_hires/fig1.png | anchor:after-summary | w=720 | cap:图 1：…… -->
 ```
+
+Replace the corresponding provisional entries in `<paper-folder>/figures.manifest` with these
+crop entries. Do not pass the master manifest as `--manifest` for a mixed render/crop selection:
+`extract_figures.py` writes a new file and would erase the already-rendered entries. Check that
+every final master-manifest path resolves to the intended high-resolution image.
 
 Keep stable descriptive anchors until publishing resolves backend block IDs.
 

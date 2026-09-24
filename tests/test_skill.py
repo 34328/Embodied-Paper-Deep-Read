@@ -440,7 +440,7 @@ class InstallerTests(unittest.TestCase):
             subprocess.run(args, capture_output=True, text=True, cwd=str(ROOT), check=True)
             self.assertTrue(marker.is_file(), "reinstall must not delete the dependency venv")
 
-    def test_install_can_create_both_official_roots(self):
+    def test_install_can_target_both_only_when_explicit(self):
         with tempfile.TemporaryDirectory() as tmp:
             home = Path(tmp) / "home"
             home.mkdir()
@@ -455,8 +455,9 @@ class InstallerTests(unittest.TestCase):
                 env=env,
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            for root in (home / ".claude/skills", home / ".codex/skills", home / ".agents/skills"):
+            for root in (home / ".claude/skills", home / ".codex/skills"):
                 self.assertTrue((root / "embodied-paper-deep-read/SKILL.md").is_file())
+            self.assertFalse((home / ".agents/skills/embodied-paper-deep-read").exists())
 
 
 if __name__ == "__main__":

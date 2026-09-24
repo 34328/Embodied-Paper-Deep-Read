@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Installer for the Embodied Paper Deep Read skill.
-# Detects Claude Code / Codex skill directories, copies the skill, and resolves
+# Copies the skill into one selected agent directory and resolves
 # the Python dependency so that `python3 <skill-dir>/scripts/...` works afterwards.
 set -euo pipefail
 
@@ -10,7 +10,6 @@ SOURCE_DIR="$REPO_ROOT/$SKILL_NAME"
 
 CLAUDE_SKILLS="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills"
 CODEX_SKILLS="${CODEX_HOME:-$HOME/.codex}/skills"
-CODEX_ALT_SKILLS="$HOME/.agents/skills"
 LEGACY_SKILL_NAME="paper-deep-read"
 TOKEN_FILE="$HOME/.mineru_token"
 
@@ -25,6 +24,7 @@ DO_CHECK=false
 DO_SET_TOKEN=false
 DO_UNINSTALL=false
 SKIP_DEPS=false
+WITH_FEISHU=false
 PYTHON=""
 
 usage() {
@@ -32,19 +32,19 @@ usage() {
 Usage: bash install.sh [options]
 
 Options:
-  --agent NAME    claude, codex, both, or auto (default)
+  --agent NAME    claude, codex, both, or auto (default; prompts interactively)
   --dest DIR      Install into DIR instead of an agent's skills directory
   --check         Report installation status only, change nothing
   --set-token     Store a MinerU API token in ~/.mineru_token (mode 600)
+  --with-feishu   Install/update the official lark-cli (Node.js 16+ and npm required)
   --skip-deps     Copy the skill but do not touch Python dependencies
   --uninstall     Remove the installed skill (leaves ~/.mineru_token alone)
   -h, --help      Show this help
 
-With no options: detect installed agents, install into their user skill roots,
-resolve Python dependencies, and print a status summary. MinerU is required;
-use --set-token to finish setup after obtaining your own token. Both known
-Codex roots are synchronized when they are distinct. An older skill named
-paper-deep-read is reported, but never modified automatically.
+Install into one selected agent's user skill root and resolve Python dependencies.
+In non-interactive shells, specify --agent or --dest. MinerU is required; use
+--set-token after creating your own token. The old skill named paper-deep-read
+is reported, but never modified automatically.
 EOF
 }
 
@@ -63,6 +63,7 @@ while [ $# -gt 0 ]; do
     --dest=*) DEST=${1#--dest=}; shift ;;
     --check) DO_CHECK=true; shift ;;
     --set-token) DO_SET_TOKEN=true; shift ;;
+    --with-feishu) WITH_FEISHU=true; shift ;;
     --skip-deps) SKIP_DEPS=true; shift ;;
     --uninstall) DO_UNINSTALL=true; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -75,7 +76,6 @@ case "$AGENT" in
   *) die "--agent must be claude, codex, both, or auto" ;;
 esac
 [ -z "$DEST" ] || [ "$AGENT" = auto ] || die "--dest and --agent cannot be combined"
-
 [ -f "$SOURCE_DIR/SKILL.md" ] || \
   die "run this from the repository root (expected $SOURCE_DIR/SKILL.md)"
 
@@ -120,57 +120,24 @@ detect_targets() {
   fi
   case "$AGENT" in
     claude) printf '%s\n' "$CLAUDE_SKILLS"; return 0 ;;
-    codex)
-      printf '%s\n' "$CODEX_SKILLS"
-      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
-      return 0
-      ;;
-    both)
-      printf '%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS"
-      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
-      return 0
-      ;;
+    codex) printf '%s\n' "$CODEX_SKILLS"; return 0 ;;
+    both) printf '%s\n%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS"; return 0 ;;
   esac
 
-  # Existing skill roots alone are not enough: a freshly installed second
-  # agent may not have created its skills directory yet.
-  have_claude=false
-  have_codex=false
-  if command -v claude >/dev/null 2>&1 || [ -d "$CLAUDE_SKILLS" ]; then
-    have_claude=true
-  fi
-  if command -v codex >/dev/null 2>&1 || [ -d "$CODEX_SKILLS" ] || [ -d "$CODEX_ALT_SKILLS" ]; then
-    have_codex=true
-  fi
-  if [ "$have_claude" = true ] || [ "$have_codex" = true ]; then
-    [ "$have_claude" = false ] || printf '%s\n' "$CLAUDE_SKILLS"
-    if [ "$have_codex" = true ]; then
-      printf '%s\n' "$CODEX_SKILLS"
-      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
-    fi
-    return 0
-  fi
   if [ ! -t 0 ]; then
-    printf '%s\n%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS"
-    [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
-    return 0
+    die "cannot determine the current agent in a non-interactive shell; pass --agent claude or --agent codex"
   fi
-  printf 'No supported agent found. Where should the skill go?\n' >&2
+  printf 'Which agent are you using now? Choose one installation target.\n' >&2
   printf '  1) Claude Code   %s\n' "$CLAUDE_SKILLS" >&2
   printf '  2) Codex         %s\n' "$CODEX_SKILLS" >&2
-  printf '  3) Both (default)\n' >&2
-  printf 'Choose [3]: ' >&2
+  printf '  3) Both (optional)\n' >&2
+  printf 'Choose 1, 2, or 3: ' >&2
   read -r choice
   case "$choice" in
     1) printf '%s\n' "$CLAUDE_SKILLS" ;;
-    2)
-      printf '%s\n' "$CODEX_SKILLS"
-      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
-      ;;
-    *)
-      printf '%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS"
-      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
-      ;;
+    2) printf '%s\n' "$CODEX_SKILLS" ;;
+    3) printf '%s\n%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS" ;;
+    *) die "choose 1, 2, or 3" ;;
   esac
 }
 
@@ -308,14 +275,9 @@ status_targets() {
   fi
   case "$AGENT" in
     claude) printf '%s\n' "$CLAUDE_SKILLS" ;;
-    codex)
-      printf '%s\n' "$CODEX_SKILLS"
-      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
-      ;;
-    *)
-      printf '%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS"
-      [ "$CODEX_ALT_SKILLS" = "$CODEX_SKILLS" ] || printf '%s\n' "$CODEX_ALT_SKILLS"
-      ;;
+    codex) printf '%s\n' "$CODEX_SKILLS" ;;
+    both) printf '%s\n%s\n' "$CLAUDE_SKILLS" "$CODEX_SKILLS" ;;
+    auto) detect_targets ;;
   esac
 }
 
@@ -330,14 +292,34 @@ PY
 
 legacy_status() {
   local root item
-  for root in "$CLAUDE_SKILLS" "$CODEX_SKILLS" "$CODEX_ALT_SKILLS"; do
+  for root in "$CLAUDE_SKILLS" "$CODEX_SKILLS" "$HOME/.agents/skills"; do
     for item in "$LEGACY_SKILL_NAME"; do
       if [ -f "$root/$item/SKILL.md" ]; then
         warn "older skill still present: $root/$item"
       fi
     done
   done
-  say "Older copies named paper-deep-read are never moved or deleted automatically; see README.md."
+  say "Older copies named paper-deep-read are never moved or deleted automatically."
+}
+
+install_feishu() {
+  if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+    die "Feishu CLI setup needs Node.js 16+ with npm. Install Node.js, then rerun with --with-feishu."
+  fi
+  if ! node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 16 ? 0 : 1)' >/dev/null 2>&1; then
+    die "Feishu CLI needs Node.js 16 or newer; current version is $(node --version)."
+  fi
+  head_ "Feishu CLI"
+  say "Installing/updating official @larksuite/cli..."
+  npm install --global @larksuite/cli
+  command -v lark-cli >/dev/null 2>&1 || die "lark-cli install did not create a command on PATH"
+  ok "$(lark-cli --version)"
+  if lark-cli skills read lark-doc >/dev/null 2>&1 && lark-cli skills read lark-shared >/dev/null 2>&1; then
+    ok "CLI includes version-matched lark-doc and lark-shared guidance"
+  else
+    warn "this CLI build does not expose both embedded Docs skills; upgrade @larksuite/cli before publishing"
+  fi
+  say "Next: configure the Feishu app and complete browser authorization from the agent."
 }
 
 status() {
@@ -394,13 +376,22 @@ status() {
   fi
 
   head_ "Feishu publishing"
-  if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1 && command -v npx >/dev/null 2>&1; then
-    ok "Node.js, npm, and npx found"
+  if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+    if node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 16 ? 0 : 1)' >/dev/null 2>&1; then
+      ok "Node.js 16+ and npm found"
+    else
+      warn "Node.js is older than 16 — update it for Feishu publishing"
+    fi
   else
-    warn "Node.js/npm/npx missing — ask your agent to help install Node.js for Feishu publishing"
+    warn "Node.js/npm missing — install Node.js 16+ for Feishu publishing"
   fi
   if command -v lark-cli >/dev/null 2>&1; then
-    ok "lark-cli: $(command -v lark-cli)"
+    ok "lark-cli: $(lark-cli --version) ($(command -v lark-cli))"
+    if lark-cli skills read lark-doc >/dev/null 2>&1 && lark-cli skills read lark-shared >/dev/null 2>&1; then
+      ok "embedded Feishu Docs guidance is available"
+    else
+      warn "embedded Feishu Docs guidance unavailable — update lark-cli"
+    fi
     if lark-cli auth status --json --verify >/dev/null 2>&1; then
       ok "Feishu login verified (document scopes checked when publishing)"
     else
@@ -466,8 +457,12 @@ else
   ensure_deps
 fi
 
+if [ "$WITH_FEISHU" = true ]; then
+  install_feishu
+fi
+
 if status "$TARGETS"; then
-  ok "Ready to use MinerU. Feishu publishing can be configured separately."
+  ok "Ready to use MinerU. Review Feishu status above if you plan to publish there."
 else
   warn "Skill files were installed, but required setup is incomplete. Follow the red status items above."
 fi

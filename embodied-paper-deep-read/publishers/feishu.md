@@ -26,8 +26,8 @@ fulfills this contract; nothing in phases 1–3 should change.
 
 The README tells the user to ask you to set Feishu up. So when `lark-cli` is missing or
 unauthorized, **drive the setup yourself**; do not paste a list of commands and tell the user
-to run them. Only two things genuinely need the user: approving an install, and the browser
-authorization itself.
+to run them. The user may need to approve a package install, provide Node.js if it is missing,
+and complete the browser authorization.
 
 Check state first — skip every step that already passes:
 
@@ -35,18 +35,23 @@ Check state first — skip every step that already passes:
 command -v lark-cli && lark-cli auth status --json --verify
 ```
 
-**The authority is Feishu's own agent-facing install guide**, not this file — flags change:
+Install or update the official CLI:
 
-```
-https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md
+```bash
+npm install --global @larksuite/cli
 ```
 
-That URL is raw Markdown, written for agents; fetch and follow it. Its four steps are install
-(`npm install -g @larksuite/cli`, **plus** `npx -y skills add https://open.feishu.cn --skill -y`,
-which the guide marks required), configure (`lark-cli config init --new`), login, and verify
-(`lark-cli auth status`). The `larksuite/cli` GitHub README has a parallel "Quick Start
-(AI Agent)" section, but its install commands differ — prefer the guide above, which is what
-the official CLI page hands users.
+The CLI embeds version-matched `lark-doc` and `lark-shared` guidance, so do not install extra
+global Agent Skills for this publisher. Read the embedded guidance before publishing:
+
+```bash
+lark-cli skills read lark-doc
+lark-cli skills read lark-shared
+```
+
+Then configure (`lark-cli config init --new`), log in, and verify (`lark-cli auth status`).
+Check the [official CLI README](https://github.com/larksuite/cli#quick-start-ai-agent) for
+updated setup commands.
 
 Four things that guide will not tell you, specific to this skill:
 

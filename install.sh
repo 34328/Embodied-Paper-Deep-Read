@@ -24,7 +24,6 @@ DO_CHECK=false
 DO_SET_TOKEN=false
 DO_UNINSTALL=false
 SKIP_DEPS=false
-WITH_FEISHU=false
 PYTHON=""
 
 usage() {
@@ -36,7 +35,6 @@ Options:
   --dest DIR      Install into DIR instead of an agent's skills directory
   --check         Report installation status only, change nothing
   --set-token     Store a MinerU API token in ~/.mineru_token (mode 600)
-  --with-feishu   Install/update the official lark-cli (Node.js 16+ and npm required)
   --skip-deps     Copy the skill but do not touch Python dependencies
   --uninstall     Remove the installed skill (leaves ~/.mineru_token alone)
   -h, --help      Show this help
@@ -63,7 +61,6 @@ while [ $# -gt 0 ]; do
     --dest=*) DEST=${1#--dest=}; shift ;;
     --check) DO_CHECK=true; shift ;;
     --set-token) DO_SET_TOKEN=true; shift ;;
-    --with-feishu) WITH_FEISHU=true; shift ;;
     --skip-deps) SKIP_DEPS=true; shift ;;
     --uninstall) DO_UNINSTALL=true; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -302,26 +299,6 @@ legacy_status() {
   say "Older copies named paper-deep-read are never moved or deleted automatically."
 }
 
-install_feishu() {
-  if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
-    die "Feishu CLI setup needs Node.js 16+ with npm. Install Node.js, then rerun with --with-feishu."
-  fi
-  if ! node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 16 ? 0 : 1)' >/dev/null 2>&1; then
-    die "Feishu CLI needs Node.js 16 or newer; current version is $(node --version)."
-  fi
-  head_ "Feishu CLI"
-  say "Installing/updating official @larksuite/cli..."
-  npm install --global @larksuite/cli
-  command -v lark-cli >/dev/null 2>&1 || die "lark-cli install did not create a command on PATH"
-  ok "$(lark-cli --version)"
-  if lark-cli skills read lark-doc >/dev/null 2>&1 && lark-cli skills read lark-shared >/dev/null 2>&1; then
-    ok "CLI includes version-matched lark-doc and lark-shared guidance"
-  else
-    warn "this CLI build does not expose both embedded Docs skills; upgrade @larksuite/cli before publishing"
-  fi
-  say "Next: configure the Feishu app and complete browser authorization from the agent."
-}
-
 status() {
   local roots=$1
   local root target py venv ready saved_ifs
@@ -373,32 +350,6 @@ status() {
   else
     bad "MinerU token missing (required) — run: bash install.sh --set-token"
     ready=false
-  fi
-
-  head_ "Feishu publishing"
-  if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
-    if node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 16 ? 0 : 1)' >/dev/null 2>&1; then
-      ok "Node.js 16+ and npm found"
-    else
-      warn "Node.js is older than 16 — update it for Feishu publishing"
-    fi
-  else
-    warn "Node.js/npm missing — install Node.js 16+ for Feishu publishing"
-  fi
-  if command -v lark-cli >/dev/null 2>&1; then
-    ok "lark-cli: $(lark-cli --version) ($(command -v lark-cli))"
-    if lark-cli skills read lark-doc >/dev/null 2>&1 && lark-cli skills read lark-shared >/dev/null 2>&1; then
-      ok "embedded Feishu Docs guidance is available"
-    else
-      warn "embedded Feishu Docs guidance unavailable — update lark-cli"
-    fi
-    if lark-cli auth status --json --verify >/dev/null 2>&1; then
-      ok "Feishu login verified (document scopes checked when publishing)"
-    else
-      warn "Feishu login not verified — ask your agent: 帮我配置飞书发布"
-    fi
-  else
-    warn "lark-cli not installed — ask your agent: 帮我配置飞书发布"
   fi
 
   head_ "Older installations"
@@ -457,12 +408,8 @@ else
   ensure_deps
 fi
 
-if [ "$WITH_FEISHU" = true ]; then
-  install_feishu
-fi
-
 if status "$TARGETS"; then
-  ok "Ready to use MinerU. Review Feishu status above if you plan to publish there."
+  ok "Local setup passed; MinerU token validity was not checked."
 else
   warn "Skill files were installed, but required setup is incomplete. Follow the red status items above."
 fi
@@ -472,5 +419,5 @@ say "1. Restart your agent, then check that the skill is listed."
 say "2. If MinerU is missing, create a token and run: bash install.sh --set-token"
 say "3. Ask it to deep-read a paper, for example:"
 say "     用 embodied-paper-deep-read 精读这篇论文：https://arxiv.org/abs/2503.20020"
-say "4. For Feishu publishing, ask your agent: 帮我配置飞书发布"
+say "4. For Feishu, tell your agent: 帮我安装飞书 CLI：https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md"
 printf '\n'

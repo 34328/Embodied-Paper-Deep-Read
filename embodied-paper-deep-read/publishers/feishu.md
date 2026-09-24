@@ -22,42 +22,37 @@ fulfills this contract; nothing in phases 1–3 should change.
 - `@file` arguments accept **cwd-relative paths only** (absolute → "unsafe file path").
   `cd` into the figure dir, or pass relative `./fig.png`.
 
-## First-time setup — you run it, not the user
+## First-time setup
 
-The README tells the user to ask you to set Feishu up. So when `lark-cli` is missing or
-unauthorized, **drive the setup yourself**; do not paste a list of commands and tell the user
-to run them. The user may need to approve a package install, provide Node.js if it is missing,
-and complete the browser authorization.
+If `lark-cli` is missing or not authorized, use Feishu's official Agent installation flow. Ask
+the user to send this prompt in the current Agent, or follow it directly when setup is part of
+the requested task:
 
-Check state first — skip every step that already passes:
+> 帮我安装飞书 CLI：https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md
+
+The [official Feishu CLI page](https://www.feishu.cn/feishu-cli) and its linked guide are the
+source of truth for installation and required CLI Skills. Do not maintain a separate install
+script or replace that flow with custom commands. It requires Node.js/npm/npx; Go and Python
+are needed only for source builds. App setup and login require the user to complete browser
+authorization. Verify with `lark-cli auth status`.
+
+Check state before setup and skip steps that already pass:
 
 ```bash
 command -v lark-cli && lark-cli auth status --json --verify
 ```
 
-Install or update the official CLI:
-
-```bash
-npm install --global @larksuite/cli
-```
-
-The CLI embeds version-matched `lark-doc` and `lark-shared` guidance, so do not install extra
-global Agent Skills for this publisher. Read the embedded guidance before publishing:
+Read the version-matched `lark-doc` and `lark-shared` guidance before publishing:
 
 ```bash
 lark-cli skills read lark-doc
 lark-cli skills read lark-shared
 ```
 
-Then configure (`lark-cli config init --new`), log in, and verify (`lark-cli auth status`).
-Check the [official CLI README](https://github.com/larksuite/cli#quick-start-ai-agent) for
-updated setup commands.
+For this publisher, keep the requested Feishu permissions to Docs and Drive. If the official
+login flow offers broader recommended scopes, choose only the scopes needed for document
+creation and image upload.
 
-Four things that guide will not tell you, specific to this skill:
-
-- **Scope it to publishing.** The guide's step 3 uses `auth login --recommend`. Prefer
-  `lark-cli auth login --domain docs --domain drive` — this skill only writes documents and
-  uploads images, so do not request the wider recommended set.
 - **`config init` and `auth login` both block on a browser.** Run them in the background and
   read the verification URL out of their output. If your harness only delivers messages at end
   of turn, use `auth login --no-wait --json`, send the user the URL (or `lark-cli auth qrcode`)
@@ -67,10 +62,13 @@ Four things that guide will not tell you, specific to this skill:
   parallel one; `--force-init` only if the user explicitly wants a separate app.
 - **Never take an app secret through chat.** `config init` reads it via `--app-secret-stdin`.
 
-If Node.js is missing, explain how to install it for the user's OS; do not install a runtime
-unasked. When Feishu was only the default destination, switch to the local Markdown publisher
-and tell the user where the note will be saved. If the user explicitly requested Feishu, stop
-until Node.js is available.
+If Node.js is missing, follow the official installation guidance for the user's operating
+system and install the runtime in the current environment when available and permitted. If
+the step needs user input or elevated privileges, give the exact official instructions and
+resume CLI setup once Node.js/npm/npx are available. When Feishu was only the default
+destination and setup cannot be completed, use the local Markdown publisher and tell the user
+where the note will be saved. If the user explicitly requested Feishu, stop until the official
+setup is available.
 
 **MUST read the version-matched embedded skill before writing** — do not rely on this
 file for exact command flags, they can change:

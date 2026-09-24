@@ -9,14 +9,33 @@ REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 SOURCE_DIR="$REPO_ROOT/$SKILL_NAME"
 
 CLAUDE_SKILLS="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills"
-CODEX_SKILLS="${CODEX_HOME:-$HOME/.codex}/skills"
+if [ -n "${CODEX_HOME:-}" ]; then
+  CODEX_SKILLS="$CODEX_HOME/skills"
+elif [ -f "$HOME/.agents/skills/$SKILL_NAME/SKILL.md" ]; then
+  CODEX_SKILLS="$HOME/.agents/skills"
+elif [ -f "$HOME/.codex/skills/$SKILL_NAME/SKILL.md" ]; then
+  CODEX_SKILLS="$HOME/.codex/skills" # Retain an existing Codex installation.
+else
+  CODEX_SKILLS="$HOME/.agents/skills"
+fi
 LEGACY_SKILL_NAME="paper-deep-read"
 TOKEN_FILE="$HOME/.mineru_token"
+FEISHU_READY=false
 
 # Directory contents this installer refreshes. The private dependency venv and
 # any files outside this list are left alone.
 MANAGED_DIRS="scripts references publishers agents"
 MANAGED_FILES="SKILL.md LICENSE requirements.txt requirements-dev.txt"
+REQUIRED_SKILL_FILES="
+  SKILL.md
+  scripts/fetch_arxiv.py scripts/index_pdf.py scripts/mineru_parse_pdf.sh
+  scripts/pdf_page_count.py scripts/render_figures.py scripts/extract_figures.py
+  scripts/normalize_cjk_punct.py scripts/_pymupdf.py
+  references/reading-scope.md references/figure-extraction.md references/content-depth.md
+  references/writing-style.md references/doc-structure.md references/beautify.md
+  publishers/feishu.md publishers/local-md.md
+  agents/openai.yaml
+"
 
 DEST=""
 AGENT="auto"
@@ -33,13 +52,14 @@ Usage: bash install.sh [options]
 Options:
   --agent NAME    claude, codex, both, or auto (default; prompts interactively)
   --dest DIR      Install into DIR instead of an agent's skills directory
-  --check         Report installation status only, change nothing
+  --check         Check paper-reading requirements and Feishu CLI/auth; change nothing
   --set-token     Store a MinerU API token in ~/.mineru_token (mode 600)
   --skip-deps     Copy the skill but do not touch Python dependencies
   --uninstall     Remove the installed skill (leaves ~/.mineru_token alone)
   -h, --help      Show this help
 
 Install into one selected agent's user skill root and resolve Python dependencies.
+--check returns the paper-reading readiness; Feishu readiness is reported separately.
 In non-interactive shells, specify --agent or --dest. MinerU is required; use
 --set-token after creating your own token. The old skill named paper-deep-read
 is reported, but never modified automatically.
@@ -83,6 +103,7 @@ set_token() {
   if [ ! -t 0 ]; then
     die "--set-token needs an interactive terminal"
   fi
+  [ ! -L "$TOKEN_FILE" ] || die "refusing to write through a symlink: $TOKEN_FILE"
   if [ -f "$TOKEN_FILE" ]; then
     printf '  %s already exists. Overwrite? [y/N] ' "$TOKEN_FILE"
     read -r reply
@@ -299,6 +320,78 @@ legacy_status() {
   say "Older copies named paper-deep-read are never moved or deleted automatically."
 }
 
+feishu_auth_ready() {
+  local auth_json
+  command -v python3 >/dev/null 2>&1 || return 1
+  auth_json=$(lark-cli auth status --json --verify 2>/dev/null) || return 1
+  printf '%s\n' "$auth_json" | python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+except (ValueError, TypeError):
+    sys.exit(1)
+user = data.get("identities", {}).get("user", {})
+sys.exit(0 if user.get("available") is True and user.get("status") == "ready" and user.get("tokenStatus") == "valid" else 1)
+' >/dev/null 2>&1
+}
+
+feishu_runtime_status() {
+  local tool tool_path
+  for tool in node npm npx; do
+    if tool_path=$(command -v "$tool" 2>/dev/null) && "$tool" --version >/dev/null 2>&1; then
+      ok "$tool is available: $tool_path"
+    else
+      bad "$tool is missing or cannot start"
+    fi
+  done
+  say "Install or repair Node.js (includes npm/npx): https://nodejs.org/en/download/"
+}
+
+feishu_status() {
+  local lark_bin lark_version guidance_ready auth_ready
+  head_ "Feishu publishing"
+  FEISHU_READY=false
+
+  if lark_bin=$(command -v lark-cli 2>/dev/null); then
+    if ! lark_version=$(lark-cli --version 2>/dev/null); then
+      warn "lark-cli was found but cannot start"
+      feishu_runtime_status
+      say "Repair the CLI by following the official Feishu guide:"
+      say "  https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md"
+      return 0
+    fi
+    ok "lark-cli installed: $lark_version ($lark_bin)"
+    guidance_ready=true
+    if ! lark-cli skills read lark-doc >/dev/null 2>&1 || \
+       ! lark-cli skills read lark-shared >/dev/null 2>&1; then
+      warn "Feishu CLI guidance is incomplete; install the required CLI Skill from the official guide"
+      say "Guide: https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md"
+      guidance_ready=false
+    else
+      ok "Feishu CLI guidance is available"
+    fi
+    if feishu_auth_ready; then
+      ok "Feishu user authorization verified"
+      auth_ready=true
+    else
+      warn "lark-cli is installed, but Feishu authorization is not verified"
+      say "Complete app setup and browser login, then verify with: lark-cli auth status --json --verify"
+      say "Guide: https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md"
+      auth_ready=false
+    fi
+    if [ "$guidance_ready" = true ] && [ "$auth_ready" = true ]; then
+      ok "Feishu publishing is ready; no installation needed"
+      FEISHU_READY=true
+    fi
+    return 0
+  fi
+
+  warn "lark-cli is not installed"
+  feishu_runtime_status
+  say "Continue setup in the current Agent with the official Feishu guide:"
+      say "  帮我安装飞书 CLI：https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md"
+}
+
 status() {
   local roots=$1
   local root target py venv ready saved_ifs
@@ -321,11 +414,16 @@ status() {
   for root in $roots; do
     IFS=$saved_ifs
     target="$root/$SKILL_NAME"
-    if [ ! -f "$target/SKILL.md" ]; then
-      bad "skill missing: $target"
-      ready=false
-    else
-      ok "skill installed: $target"
+    local skill_files_ready=true item
+    for item in $REQUIRED_SKILL_FILES; do
+      if [ ! -f "$target/$item" ]; then
+        bad "skill file missing: $target/$item"
+        skill_files_ready=false
+        ready=false
+      fi
+    done
+    if [ "$skill_files_ready" = true ]; then
+      ok "skill files installed: $target"
     fi
     venv="$target/.venv/bin/python3"
     if [ -n "$py" ] && python_supported "$py" && has_deps "$py"; then
@@ -351,6 +449,15 @@ status() {
     bad "MinerU token missing (required) — run: bash install.sh --set-token"
     ready=false
   fi
+
+  head_ "Paper-reading readiness"
+  if [ "$ready" = true ]; then
+    ok "Skill, Python dependencies, and MinerU token are configured"
+  else
+    warn "Paper-reading setup is incomplete; resolve the items marked ✗ above"
+  fi
+
+  feishu_status
 
   head_ "Older installations"
   legacy_status
@@ -409,7 +516,7 @@ else
 fi
 
 if status "$TARGETS"; then
-  ok "Local setup passed; MinerU token validity was not checked."
+  ok "Paper-reading core is ready; Feishu publishing status is reported separately."
 else
   warn "Skill files were installed, but required setup is incomplete. Follow the red status items above."
 fi
@@ -419,5 +526,9 @@ say "1. Restart your agent, then check that the skill is listed."
 say "2. If MinerU is missing, create a token and run: bash install.sh --set-token"
 say "3. Ask it to deep-read a paper, for example:"
 say "     用 embodied-paper-deep-read 精读这篇论文：https://arxiv.org/abs/2503.20020"
-say "4. For Feishu, tell your agent: 帮我安装飞书 CLI：https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md"
+if [ "$FEISHU_READY" = true ]; then
+  say "4. Feishu CLI and authorization are ready; no installation needed."
+else
+  say "4. For Feishu publishing, follow the Feishu status instructions above in the current Agent."
+fi
 printf '\n'

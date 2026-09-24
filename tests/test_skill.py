@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -404,6 +405,68 @@ class PunctuationTests(unittest.TestCase):
 class InstallerTests(unittest.TestCase):
     INSTALLER = ROOT / "install.sh"
 
+    def _run_status(self, tmp, *, auth_json=None, with_node_tools=False,
+                    broken_node=False, broken_cli=False, missing_guidance=False,
+                    missing_skill_file=None):
+        home = Path(tmp) / "home"
+        skills = home / ".agents/skills"
+        target = skills / "embodied-paper-deep-read"
+        shutil.copytree(ROOT / "embodied-paper-deep-read", target,
+                        ignore=shutil.ignore_patterns(".venv", "__pycache__", "*.pyc"))
+        if missing_skill_file:
+            (target / missing_skill_file).unlink()
+
+        fake_bin = Path(tmp) / "bin"
+        fake_bin.mkdir(exist_ok=True)
+        fake_python = fake_bin / "python3"
+        fake_python.write_text('#!/bin/sh\nexec "$TEST_PYTHON" "$@"\n', encoding="utf-8")
+        fake_python.chmod(0o755)
+        if auth_json is not None or broken_cli:
+            fake_lark = fake_bin / "lark-cli"
+            fake_lark.write_text(
+                "#!/bin/sh\n"
+                f"if [ \"$1\" = \"--version\" ]; then echo 'lark-cli version test'; exit {1 if broken_cli else 0}; fi\n"
+                f"if [ \"$1\" = \"skills\" ] && [ \"$2\" = \"read\" ]; then exit {1 if missing_guidance else 0}; fi\n"
+                "if [ \"$1\" = \"auth\" ] && [ \"$2\" = \"status\" ] && [ \"$3\" = \"--json\" ] && [ \"$4\" = \"--verify\" ]; then\n"
+                "  printf '%s\\n' \"$FAKE_LARK_STATUS\"; exit 0;\n"
+                "fi\nexit 2\n",
+                encoding="utf-8",
+            )
+            fake_lark.chmod(0o755)
+        if with_node_tools:
+            for name in ("node", "npm", "npx"):
+                path = fake_bin / name
+                exit_code = 1 if broken_node and name == "node" else 0
+                path.write_text(f"#!/bin/sh\nexit {exit_code}\n", encoding="utf-8")
+                path.chmod(0o755)
+
+        excluded = set()
+        for name in ("lark-cli", "node", "npm", "npx"):
+            found = shutil.which(name)
+            if found:
+                excluded.add(str(Path(found).absolute().parent))
+        remaining = [p for p in os.environ.get("PATH", "").split(os.pathsep)
+                     if p and str(Path(p).absolute()) not in excluded]
+        env = os.environ.copy()
+        env.update({
+            "HOME": str(home),
+            "MINERU_TOKEN": "test-only-token",
+            "TEST_PYTHON": sys.executable,
+            "PYTHONPATH": os.pathsep.join(p for p in sys.path if p and Path(p).is_absolute()),
+            "PATH": os.pathsep.join([str(fake_bin), *remaining]),
+            "FAKE_LARK_STATUS": auth_json or "",
+        })
+        env.pop("CODEX_HOME", None)
+        env.pop("CLAUDE_CONFIG_DIR", None)
+        result = subprocess.run(
+            ["bash", str(self.INSTALLER), "--check", "--dest", str(skills)],
+            capture_output=True,
+            text=True,
+            cwd=str(ROOT),
+            env=env,
+        )
+        return result
+
     def test_syntax_is_valid(self):
         result = subprocess.run(["bash", "-n", str(self.INSTALLER)], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -455,9 +518,96 @@ class InstallerTests(unittest.TestCase):
                 env=env,
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            for root in (home / ".claude/skills", home / ".codex/skills"):
+            for root in (home / ".claude/skills", home / ".agents/skills"):
                 self.assertTrue((root / "embodied-paper-deep-read/SKILL.md").is_file())
+            self.assertFalse((home / ".codex/skills/embodied-paper-deep-read").exists())
+
+    def test_codex_keeps_an_existing_legacy_install_target(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp) / "home"
+            legacy = home / ".codex/skills/embodied-paper-deep-read"
+            legacy.mkdir(parents=True)
+            (legacy / "SKILL.md").write_text("old copy\n", encoding="utf-8")
+            env = os.environ.copy()
+            env["HOME"] = str(home)
+            env.pop("CODEX_HOME", None)
+            result = subprocess.run(
+                ["bash", str(self.INSTALLER), "--agent", "codex", "--skip-deps"],
+                capture_output=True,
+                text=True,
+                cwd=str(ROOT),
+                env=env,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("installed to " + str(home / ".codex/skills"), result.stdout)
             self.assertFalse((home / ".agents/skills/embodied-paper-deep-read").exists())
+
+    def test_feishu_status_distinguishes_missing_runtime_cli_and_auth(self):
+        ready = '{"identities":{"user":{"available":true,"status":"ready","tokenStatus":"valid"}}}'
+        unauthed = '{"identities":{"user":{"available":false,"status":"missing","tokenStatus":"missing"}}}'
+        cases = [
+            ({}, "lark-cli is not installed", "node is missing or cannot start", "no installation needed"),
+            ({"with_node_tools": True}, "node is available:", "lark-cli is not installed", "node is missing or cannot start"),
+            ({"with_node_tools": True, "broken_node": True}, "node is missing or cannot start", "npm is available:", "node is available:"),
+            ({"auth_json": unauthed}, "authorization is not verified", "feishu cli guidance is available", "publishing is ready"),
+            ({"auth_json": ready}, "publishing is ready", "authorization verified", "lark-cli is not installed"),
+            ({"broken_cli": True}, "lark-cli was found but cannot start", "node is missing or cannot start", "publishing is ready"),
+            ({"auth_json": unauthed, "missing_guidance": True}, "guidance is incomplete", "authorization is not verified", "publishing is ready"),
+        ]
+        for options, expected, expected_also, absent in cases:
+            with self.subTest(expected=expected), tempfile.TemporaryDirectory() as tmp:
+                result = self._run_status(tmp, **options)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                output = result.stdout.lower()
+                self.assertIn(expected, output)
+                self.assertIn(expected_also, output)
+                self.assertNotIn(absent, output)
+
+    def test_feishu_ready_message_is_preserved_after_install(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp) / "home"
+            fake_bin = Path(tmp) / "bin"
+            fake_bin.mkdir()
+            fake_python = fake_bin / "python3"
+            fake_python.write_text('#!/bin/sh\nexec "$TEST_PYTHON" "$@"\n', encoding="utf-8")
+            fake_python.chmod(0o755)
+            fake_lark = fake_bin / "lark-cli"
+            fake_lark.write_text(
+                "#!/bin/sh\n"
+                "if [ \"$1\" = \"--version\" ]; then echo 'lark-cli version test'; exit 0; fi\n"
+                "if [ \"$1\" = \"skills\" ] && [ \"$2\" = \"read\" ]; then exit 0; fi\n"
+                "if [ \"$1\" = \"auth\" ] && [ \"$2\" = \"status\" ] && [ \"$3\" = \"--json\" ] && [ \"$4\" = \"--verify\" ]; then\n"
+                "  printf '%s\\n' '{\"identities\":{\"user\":{\"available\":true,\"status\":\"ready\",\"tokenStatus\":\"valid\"}}}'; exit 0;\n"
+                "fi\nexit 2\n",
+                encoding="utf-8",
+            )
+            fake_lark.chmod(0o755)
+            env = os.environ.copy()
+            env.update({
+                "HOME": str(home),
+                "MINERU_TOKEN": "test-only-token",
+                "TEST_PYTHON": sys.executable,
+                "PYTHONPATH": os.pathsep.join(p for p in sys.path if p and Path(p).is_absolute()),
+                "PATH": os.pathsep.join([str(fake_bin), os.environ.get("PATH", "")]),
+            })
+            env.pop("CODEX_HOME", None)
+            result = subprocess.run(
+                ["bash", str(self.INSTALLER), "--agent", "codex", "--skip-deps"],
+                capture_output=True,
+                text=True,
+                cwd=str(ROOT),
+                env=env,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("Feishu CLI and authorization are ready; no installation needed.", result.stdout)
+            self.assertNotIn("For Feishu publishing, follow", result.stdout)
+
+    def test_status_fails_when_a_required_skill_file_is_missing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = self._run_status(tmp, missing_skill_file="scripts/fetch_arxiv.py")
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("skill file missing:", result.stdout)
+            self.assertIn("Paper-reading setup is incomplete", result.stdout)
 
 
 if __name__ == "__main__":

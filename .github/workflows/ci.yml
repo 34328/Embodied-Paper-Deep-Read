@@ -38,4 +38,4 @@ jobs:
       - run: /bin/bash -n install.sh
       - run: /bin/bash install.sh --dest "$RUNNER_TEMP/skills" --skip-deps
       - run: test -f "$RUNNER_TEMP/skills/embodied-paper-deep-read/SKILL.md"
-      - run: /bin/bash install.sh --check
+      - run: MINERU_TOKEN=ci-test-token /bin/bash install.sh --check --dest "$RUNNER_TEMP/skills"

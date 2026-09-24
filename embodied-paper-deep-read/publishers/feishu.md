@@ -22,25 +22,38 @@ fulfills this contract; nothing in phases 1–3 should change.
 - `@file` arguments accept **cwd-relative paths only** (absolute → "unsafe file path").
   `cd` into the figure dir, or pass relative `./fig.png`.
 
-## First-time setup
+## Setup and readiness
 
-If `lark-cli` is missing or not authorized, use Feishu's official Agent installation flow. Ask
-the user to send this prompt in the current Agent, or follow it directly when setup is part of
-the requested task:
+Before a Feishu publish, detect the current state and report the paper-reading and publishing
+readiness separately. Feishu is ready only when `lark-cli` runs, `lark-doc` and `lark-shared`
+guidance is available, and `lark-cli auth status --json --verify` succeeds. Skip setup only
+when all three checks pass. Otherwise keep any working CLI and repair each missing component:
+install the required CLI Skill if guidance is missing, or complete only app setup/login if
+authorization is missing. If the CLI is absent or cannot start, follow the [official Feishu CLI
+guide](https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md)
+in the current Agent; do not ask the user to send a second prompt or use a project-specific
+installer.
 
-> 帮我安装飞书 CLI：https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md
+The [Feishu CLI page](https://www.feishu.cn/feishu-cli) is the user-facing entry point. The
+official guide requires Node.js/npm/npx and installs both `lark-cli` and its required CLI Skill.
+For its `npx skills add` step, preserve the official arguments and add
+`--global --agent <current-agent-id>` (for example, `codex` or `claude-code`) so the companion
+Skill is installed only in the current Agent's user-level directory, not project scope or every
+Agent.
+If Node.js is missing, use the official [Node.js download page](https://nodejs.org/en/download/)
+and the operating system's supported installation method. Go and Python are only needed for
+source builds. App setup and login require the user to complete browser authorization; request
+that interaction only when the official flow reaches it. Verify with
+`lark-cli auth status --json --verify`.
 
-The [official Feishu CLI page](https://www.feishu.cn/feishu-cli) and its linked guide are the
-source of truth for installation and required CLI Skills. Do not maintain a separate install
-script or replace that flow with custom commands. It requires Node.js/npm/npx; Go and Python
-are needed only for source builds. App setup and login require the user to complete browser
-authorization. Verify with `lark-cli auth status`.
+The expected states are:
 
-Check state before setup and skip steps that already pass:
-
-```bash
-command -v lark-cli && lark-cli auth status --json --verify
-```
+- `lark-cli`, both guidance Skills, and verified user auth present: ready; skip setup.
+- `lark-cli` present but guidance missing: keep the CLI and install the required CLI Skill.
+- `lark-cli` present but auth unverified: keep the CLI and complete app/login setup.
+- Both guidance and auth missing: report and resolve both; do not stop after the first finding.
+- `lark-cli` missing: install it and its required CLI Skill from the official guide.
+- Node.js/npm/npx missing: install the runtime first, then resume the official CLI steps.
 
 Read the version-matched `lark-doc` and `lark-shared` guidance before publishing:
 
@@ -62,13 +75,9 @@ creation and image upload.
   parallel one; `--force-init` only if the user explicitly wants a separate app.
 - **Never take an app secret through chat.** `config init` reads it via `--app-secret-stdin`.
 
-If Node.js is missing, follow the official installation guidance for the user's operating
-system and install the runtime in the current environment when available and permitted. If
-the step needs user input or elevated privileges, give the exact official instructions and
-resume CLI setup once Node.js/npm/npx are available. When Feishu was only the default
-destination and setup cannot be completed, use the local Markdown publisher and tell the user
-where the note will be saved. If the user explicitly requested Feishu, stop until the official
-setup is available.
+If the user asked for local Markdown, Feishu setup is not required. Otherwise, complete the
+official setup or stop at the specific user action that remains (usually Node.js installation
+permission or browser authorization); state the exact missing item and resume once it is ready.
 
 **MUST read the version-matched embedded skill before writing** — do not rely on this
 file for exact command flags, they can change:

@@ -16,9 +16,10 @@ supports all of them. Cite separately when the evidence changes.
 
 Distinguish the authors' reported result or interpretation from this note's own
 calculation or assessment. Show the inputs and conditions for a derived comparison.
-For a parameter, data ratio, protocol detail, or ablation that materially affects
-interpretation but is absent from the source, write `原文未披露` rather than estimating
-or filling a plausible default. Do not turn an unknown into a claim of absence.
+Omit details the source does not report; do not guess values, fill empty table cells, or
+repeatedly list missing fields. Only when a missing detail materially affects understanding
+of a central claim, reproducibility, comparison fairness, or applicability, briefly state the
+gap where it matters and explain its impact. Do not turn an unknown into a claim of absence.
 
 ## Coverage applies across both reading categories
 
@@ -35,8 +36,7 @@ benchmark protocol; real-world/system evaluation; safety, privacy, or deployment
 limitations/failures. For each material item, capture the steps or mechanism, consequential
 choices and parameters, rationale when stated, evidence and outcome, limitations, and page
 locators. Map it to a final chapter before drafting. Do not add empty headings for absent
-content. When an unreported detail is necessary to interpret or reproduce a central claim,
-state `原文未披露`.
+content.
 
 Match detail to the source's technical density, not its label as a paper or report. For a dense
 report, organize related details into compact tables and process diagrams, while explaining
@@ -49,8 +49,9 @@ claim, condition, caveat, and causal link.
 - For model and algorithm papers, explain each material module's mechanism and role;
   record its **input/output dimension and format when reported**. For a multi-module
   architecture, summarize the reported interfaces in a table (模块 / 输入 / 输出 /
-  作用), including patch features, token dimensions, or head outputs where available.
-  Mark a missing dimension that matters to understanding as `原文未披露`; do not infer it.
+  作用), including patch features, token dimensions, or head outputs where available. Do not
+  add placeholders for unreported dimensions; briefly flag a missing dimension only when it
+  prevents understanding or reproducing a core module.
 - Name concrete hyperparameters when the source gives them: number of blocks, heads,
   hidden dimension, MLP ratio, ViT variant, etc. Separate training-only components
   from the inference path and explain what each design choice changes.
@@ -103,8 +104,9 @@ on its own centered line:
 When the source reports model-training composition, give a table using the main text and
 relevant appendix. Include the fields that are reported and material: source/dataset, size or
 units, modality or task, mixing ratio, filtering or annotation, purpose/training stage, and
-whether it is used for training, validation, or evaluation. If a value is not reported, mark a
-consequential gap `原文未披露` instead of calculating a ratio from incompatible counts.
+whether it is used for training, validation, or evaluation. Omit unreported fields; do not
+calculate ratios from incompatible counts. Briefly explain a missing value only when it changes
+how the training composition or a central result should be interpreted.
 
 For a data resource or benchmark, use a table when it makes the source's data inventory clearer.
 Select fields supported by the paper, such as source, scale, modality, task, annotation, split,
@@ -129,7 +131,8 @@ evidence that tests them; use only fields supported by the source.
 - For a dataset or benchmark report, define the tasks and units of evaluation,
   splits, metric computation, allowed inputs, baseline setup, and any leakage or
   contamination controls. Explain what the benchmark measures and what its
-  protocol cannot establish. Mark important undisclosed controls explicitly.
+  protocol cannot establish. Briefly note an unreported control only when its absence affects
+  interpretation of the result.
 
 ## System, real-world, safety, and deployment details
 
@@ -138,8 +141,8 @@ setup rather than summarizing it as “validated in the real world.” Include r
 hardware, sensors, control frequency, action interface, runtime components, latency or compute,
 operator intervention, task/environment conditions, number of trials, safety constraints, and
 deployment failures when available. Separate an illustrative demo from a controlled evaluation;
-state what the evidence does and does not establish. Mark material missing details as
-`原文未披露` and cite the relevant pages.
+state what the evidence does and does not establish. Mention an unreported setup detail only
+when it materially limits interpretation or reproducibility, and cite the relevant pages.
 
 ## Experiment tables: faithful but selective
 

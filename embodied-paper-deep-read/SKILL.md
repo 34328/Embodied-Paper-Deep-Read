@@ -182,6 +182,10 @@ Check central conclusions in the other direction: each must trace to cited evide
 conditions, with original results, cited studies, and this reading's inferences distinguished.
 Revise a generic summary that merely restates the source's prose instead of explaining its
 technical distinctions. Use the shared review questions in `references/writing-style.md`.
+In the published prose, state the technical claim first. Keep traceability in a quiet locator at
+the end of the claim; do not narrate the evidence map with sentences such as “原文第 X 章提供…”,
+“图 X 说明…”, or “本次研读发现…”. Preserve explicit attribution only when readers need it to
+distinguish the source authors, a cited study, and this reading's inference.
 
 Use the source reference described in `references/doc-structure.md`: arXiv when available,
 otherwise an available DOI, publisher, or official project link. When no public URL exists,
@@ -229,7 +233,11 @@ ratios, latex, URLs, and version strings.
   reported in the source, whether primary or secondary.
 - Cite page numbers in evidence notes so any claim can be reopened without rereading the PDF.
   Carry the page or figure/table locator into the final note for pivotal technical and
-  quantitative claims.
+  quantitative claims, but keep the locator subordinate to the technical statement rather than
+  making source navigation the subject of a paragraph.
+- Before publishing, scan the exact body for source-navigation narration such as “原文第 X 章”,
+  “原文图 / 表 X”, and “本次研读”. Rewrite each hit as a direct technical statement unless the
+  source organization itself is analytically relevant.
 - Do not invent dimensions, data ratios, stages, or claims absent from the paper.
 - Preserve every material technical claim, decisive metric, assumption, caveat, failure case,
   and causal link needed to reconstruct the paper's argument. Remove duplication, filler, and

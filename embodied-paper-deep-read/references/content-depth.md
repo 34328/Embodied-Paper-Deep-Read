@@ -14,6 +14,11 @@ keep `PDF 第 n 页` as the stable locator and add the printed page only when us
 Group a few adjacent claims under one citation only when the same source passage
 supports all of them. Cite separately when the evidence changes.
 
+Treat these locators as unobtrusive references. The reader should encounter the technical point
+first; do not turn chapter, page, figure, or table provenance into the paragraph's topic. A final
+note should say what the mechanism or result establishes and then cite `（PDF 第 n 页，图 x）`,
+rather than say that “原文第 x 章 / 图 x / 表 x 提供了证据”.
+
 Distinguish the authors' reported result or interpretation from this note's own
 calculation or assessment. Show the inputs and conditions for a derived comparison.
 Omit details the source does not report; do not guess values, fill empty table cells, or

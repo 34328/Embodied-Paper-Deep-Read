@@ -11,6 +11,12 @@
   limits that matter to the evidence. Mark a reading-based inference as such rather
   than writing it as an author claim.
 - Don't announce structure ("接下来我们分三点讨论"); let the headings do that.
+- State the technical conclusion, mechanism, or comparison directly. Source traceability belongs
+  in a short locator after the supported claim, not in source-navigation prose such as “原文第 X
+  章提供…”, “图 X 告诉我们…”, “表 X 给出…”, or “本次研读发现…”. Mention a source section,
+  figure, or table in the sentence only when its organization or visual encoding is itself the
+  object being explained. Keep attribution when it distinguishes the authors' claim, a cited
+  study's result, or this reading's inference.
 
 ## Two common layout failures
 

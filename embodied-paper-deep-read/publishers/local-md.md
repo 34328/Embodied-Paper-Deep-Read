@@ -28,17 +28,9 @@ Write a single `.md` file plus a figures folder inside the paper folder required
   may write the numbers as text — `# 1 研究背景与动机`, `## 1.1 问题定义`. Keep the exact
   same skeleton as `references/doc-structure.md`; only the numbering mechanism differs.
 - **精华提炼 / 核心创新 / 术语与符号 callouts** → blockquotes with the emoji prefix, drop the
-  background color:
-  ```
-  > 💡 **精华提炼**
-  >
-  > 一句话说明论文的核心结论。
-  >
-  > - **核心方法：** …
-  > - **规模 / 数据：** …
-  > - **主要结果：** …
-  > - **迁移价值：** …
-  ```
+  background color. For example, start the summary with `> 💡 **精华提炼**`, then give a brief
+  evidence-backed judgment and only the distinct takeaways this source warrants. Choose labels
+  from its actual contributions; do not fill a fixed set of method, data, result, or value fields.
 - **Tables** → GitHub-flavored Markdown tables. Bold the paper's own method when it is the
   comparison focus, or the actual winning row when that is the claim; do not equate the two.
   Center short numeric or categorical columns via `:---:`; left-align explanatory columns via

@@ -151,6 +151,10 @@ agent-driving notes; prefer them over this file when they disagree.
      headers and compact values, but left-align explanatory cells that wrap across lines.
      Derive the usable width from a fetched full-width/auto-layout table when one exists;
      otherwise use stable proportional column widths as in `references/beautify.md`.
+     Keep tables to concise, comparable fields. When mechanism, risk, or evidence explanations
+     make a column read like stacked paragraphs, put that reasoning in nearby prose or bullets
+     and keep the table's short comparison labels. Place page citations beside the claims they
+     support without mechanically repeating one locator in every row.
      All display formulas must be standalone centered paragraphs.
 
 4. **Verify once after all moves.** Re-fetch the outline and affected sections. Use
@@ -182,13 +186,19 @@ agent-driving notes; prefer them over this file when they disagree.
      caption. Inserted images render as **`<img … name=… caption=…>`** — grep for `<img`,
      NOT `<image>`, or you'll wrongly conclude zero images.
 
-   Finally, scan the rendered Feishu document H2 by H2 for a visible conclusion and readable
-   parallel distinctions. Inspect the longest table and a dense figure at their displayed sizes:
-   explanatory cells and figure labels must be legible, not merely high-resolution on disk.
-   Fix text walls or cramped tables in the source draft, then republish text and reinsert figures
-   as required by step 1. If the rendered page is inaccessible, inspect an available local
-   preview and state that Feishu visual verification remains unconfirmed. XML structure and the
-   density checker cannot establish visual readability on their own.
+   Review every H2 as a reading unit in the exact source draft: each should make its technical
+   point visible and distinguish parallel mechanisms, findings, or limits. In the rendered Feishu
+   document, inspect the front matter, at least one substantive section per numbered chapter,
+   the densest sections, each table with explanatory text in its cells, and a dense figure at
+   their displayed sizes. For a short note, inspect every H2; for a long report, use the
+   full-document fetch to locate structurally dense passages, then verify their layout on the
+   rendered page. XML can expose long cells but cannot show how narrowly they wrap.
+   Explanatory cells and figure labels must be legible, not merely high-resolution on disk.
+   Fix problems in the source draft, then update the affected blocks or republish the body;
+   reinsert figures after an overwrite as required by step 1. If the rendered page is
+   inaccessible, inspect an available local preview and state that Feishu visual verification
+   remains unconfirmed. XML structure and the density checker cannot establish visual
+   readability on their own.
 
 ## Block ID lifecycle (don't reuse stale IDs)
 

@@ -151,17 +151,10 @@ Keep stable descriptive anchors until publishing resolves backend block IDs.
 
 ## Qualitative-section layout
 
-Do not stack several figures first and explain all of them in one trailing paragraph. Interleave
-each evidence group with its interpretation in this order:
-
-1. H3 comparison/theme title
-2. one short orientation paragraph
-3. centered figure with caption
-4. concise observations or a centered comparison table
-5. optional one-paragraph synthesis
-
-Show the figure before the observations/table that interpret it. Keep each observation tied to
-visible evidence in that figure; avoid repeating the caption verbatim.
+Place each figure near the claim it helps explain. Show the figure before the interpretation
+that refers to it, and tie observations to visible evidence rather than repeating its caption.
+Use a subsection heading or comparison table only when the content itself needs one; avoid
+stacking several figures followed by a single catchall explanation.
 
 ## Related-work figures (explicit opt-in only)
 

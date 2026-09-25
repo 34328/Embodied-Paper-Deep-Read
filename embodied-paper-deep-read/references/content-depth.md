@@ -40,8 +40,17 @@ against the actual note: every material item needs a named location and a concre
 not just an H2 title or one catchall sentence. Reopen the source for any unexplained item.
 Do not add empty headings for absent content.
 
+Check the draft in the other direction as well: every central takeaway must trace to a source
+entry and a page, figure, or table locator. Identify whether it is the source authors' own
+claim or result, a result of a cited study, or this reading's inference. Keep the reported
+conditions and limits with the claim. A section that follows source paragraphs in order but
+does not clarify the relevant mechanism, protocol, evidence, or distinction and its
+significance needs rewriting rather than more translated detail. Apply this check to model
+and algorithm papers, data or benchmark work, integrated technical reports, and surveys;
+include only elements material to the source, without filling a fixed quota.
+
 Match detail to the source's technical density, not its label as a paper or report. For a dense
-report, organize related details into compact tables and process diagrams, while explaining
+report, consider compact tables or process diagrams where they clarify related details; explain
 the choices and consequences in prose. For a shorter paper, preserve the same coverage standard
 without padding. Summarize repeated or peripheral details, but retain every material technical
 claim, condition, caveat, and causal link.
@@ -50,32 +59,31 @@ claim, condition, caveat, and causal link.
 
 For a survey or review, the authors' taxonomy and synthesis are its own contributions; the
 individual methods, datasets, benchmarks, and results it discusses belong to cited studies.
-Identify the major axes of the survey first. For each substantive family, include at least one
-named representative that the source discusses, then explain its mechanism or protocol, the
-problem it addresses, its constraint or failure mode, and what evidence supports that reading.
-Add more representatives where different designs produce a meaningful contrast. Do not list
-every bibliography entry or substitute a string of names for technical explanation.
+Identify the major axes of the survey first. For each substantive family in its argument, use
+the named representatives needed to explain the mechanism or protocol, the problem they
+address, consequential differences, and the evidence for that reading. Do not list every
+bibliography entry or substitute a string of names for technical explanation.
 
-Compare families on shared, decision-useful dimensions (for example, memory carrier, read/write
-operation, updateability, compute budget, and failure mode), using a compact table when it
-improves scanning. State the synthesis *after* the comparison: where the approaches differ,
-which tradeoff matters, and what cannot be compared because protocols or tasks differ. For a
-benchmark survey, explain what each representative task tests, which historical information is
-hidden or exposed, and what a score can and cannot establish. Cite the survey page containing
-the classification or the cited result/table; identify the underlying study by name when
-attributing its result.
+Compare families on shared dimensions that matter for the source's research question, using a
+compact table when it improves scanning. State the synthesis *after* the comparison: where the
+approaches differ, which tradeoff matters, and what cannot be compared because tasks, data,
+metrics, or protocols differ. For a benchmark survey, explain what representative tasks,
+allowed inputs, and metrics test, and what a score can and cannot establish. Cite the survey
+page containing the classification or cited result/table; identify the underlying study by
+name when attributing its result.
 
 Do not spend the available detail budget on rephrasing the introduction, repeating definitions,
 or listing dataset sizes without their diagnostic purpose. A deep-read should let the reader
-reconstruct why a representative approach works, when to prefer it, and how the evidence limits
-that choice.
+reconstruct why a representative approach works, which use conditions the source supports,
+and how the evidence limits that conclusion.
 
 ## Methods need real dimensions
 
 - For model and algorithm papers, explain each material module's mechanism and role;
   record its **input/output dimension and format when reported**. For a multi-module
-  architecture, summarize the reported interfaces in a table (模块 / 输入 / 输出 /
-  作用), including patch features, token dimensions, or head outputs where available. Do not
+  architecture, use a compact interface table when modules share comparable fields; otherwise
+  explain them in prose. Include patch features, token dimensions, or head outputs where
+  available. Do not
   add placeholders for unreported dimensions; briefly flag a missing dimension only when it
   prevents understanding or reproducing a core module.
 - Name concrete hyperparameters when the source gives them: number of blocks, heads,
@@ -84,20 +92,17 @@ that choice.
 
 ## Visualize multi-stage methods when useful
 
-For a model or algorithm with at least three dependent stages or a meaningful
-output/training branch, place one concise pipeline **after the architecture
-explanation and before the module input/output table when one is warranted**. For a
-reported data pipeline, a process diagram may instead show the reported
-acquisition, processing, quality-control, and release/evaluation path; it does not
-require a model-module table. On Feishu use a Mermaid whiteboard; on Markdown use
-a fenced Mermaid block.
+Add a process diagram when it makes a model's execution path or a data pipeline's stages and
+branches easier to understand than the source figure and prose alone. Place it beside the
+explanation it supports; do not impose a stage count or a fixed position relative to tables.
+On Feishu use a Mermaid whiteboard; on Markdown use a fenced Mermaid block.
 
 - Show the main data path, module boundaries, output branches, and training-only branches.
 - Keep node labels short; leave tensor details and hyperparameters to the
   accompanying table or prose.
 - Complement rather than redraw the paper's architecture figure: the original figure preserves
   visual design, while the pipeline makes execution order and branching easy to scan.
-- Omit the diagram when prose already makes the stages and dependencies clear.
+- Omit the diagram when prose or the source figure already makes the stages and dependencies clear.
 - After publishing, export/preview the whiteboard once to verify that labels, arrows, and layout
   render correctly.
 
@@ -127,8 +132,9 @@ on its own centered line:
 
 ## Training data and data-resource tables
 
-When the source reports model-training composition, give a table using the main text and
-relevant appendix. Include the fields that are reported and material: source/dataset, size or
+When the source reports model-training composition, use a table when it helps compare several
+sources or stages; a simple mixture can be explained in prose. Include the fields that are
+reported and material: source/dataset, size or
 units, modality or task, mixing ratio, filtering or annotation, purpose/training stage, and
 whether it is used for training, validation, or evaluation. Omit unreported fields; do not
 calculate ratios from incompatible counts. Briefly explain a missing value only when it changes
@@ -141,7 +147,6 @@ prose; do not turn a table into a substitute for describing the pipeline.
 
 - If the paper only does single-stage finetuning, say so honestly ("监督用途") — **do not
   invent** pre-training / post-training stages that aren't there.
-- Distinguish geometry-only vs. motion-annotated datasets if the paper does.
 
 ## Data pipelines, datasets, and benchmarks wherever they appear
 

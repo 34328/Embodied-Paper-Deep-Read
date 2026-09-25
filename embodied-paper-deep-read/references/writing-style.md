@@ -17,17 +17,17 @@
 Dense notes often develop one of two layout problems:
 
 - **Failure A — bold-lead wall.** A run of paragraphs each opening with a bold label:
-  `**鸿沟一:…。** <150 字长段>` / `**Phase 1——冻结 VLM。** <长段,里面还套第二个加粗>`.
+  `**条件一：…。** <长段>` / `**阶段二：…。** <长段,里面还套第二个加粗>`.
   Three or more of these in a row is the tell-tale AI rhythm, and each "paragraph" is
   usually a mini-section masquerading as prose.
 - **Failure B — undifferentiated wall.** A single 300–400 字 paragraph that fuses setup +
   mechanism + numbers + qualitative analysis + caveat, with no visual structure at all.
   Common in 实验结果 / 讨论 sections.
 
-When a block contains parallel or sequenced items (multiple gaps, stages, findings,
-or failure modes), use a framing sentence followed by a list. Each item should be a
-complete explanation. Keep flowing paragraphs for a continuous argument such as
-motivation, a causal chain, or synthesis.
+When a block contains independent, comparable items (multiple findings, criteria, or failure
+modes), use a framing sentence followed by a list or table. Each item should be a complete
+explanation. Keep flowing paragraphs for a dependent sequence, derivation, causal argument, or
+synthesis; a process diagram may help when the sequence has branches.
 
 ### Hard rules for paragraph structure
 
@@ -49,37 +49,12 @@ motivation, a causal chain, or synthesis.
 
 Before writing any block, ask: *are these items parallel/enumerable, or is this one continuous
 argument?*
-- **Parallel / sequenced** (三条鸿沟、两个 phase、四类 VQA、一组失败模式、三点结论) → **list**,
-  one framing sentence above it. This is the default for "结果 / 讨论 / 局限" content.
-- **Continuous** (为什么现有方法不行 → 所以本文这样做;一条因果链) → **prose**,
-  with the reasoning and necessary evidence kept together, usually 2–4 sentences per paragraph.
-- When it is unclear whether content is enumerable, prefer a list if the items have distinct
-  conditions, mechanisms, or outcomes. Keep prose when the reader needs one uninterrupted
-  causal explanation.
-
-### Worked example (this is the exact mistake to avoid)
-
-BAD — **bold-lead wall** (what a lazy pass produces):
-```
-<p><b>鸿沟一：模态与数据规模。</b>视觉编码器……（150 字）。</p>
-<p><b>鸿沟二：预训练分布。</b>如图 1……（120 字）。</p>
-<p><b>鸿沟三：训练目标。</b>LLM/VLM……（160 字）。</p>
-```
-GOOD — **framing sentence + list** (same content, real structure):
-```
-<p>作者把视觉语言模型用于连续动作预测时的难点归纳为三个方面：</p>
-<ul>
-  <li><b>模态与数据规模。</b>视觉特征可经 CLIP 与文本对齐，而动作是 3D+时间上的连续信号，
-      缺乏长期表征研究与海量数据驱动……</li>
-  <li><b>预训练分布。</b>具身视觉是第一人称、鱼眼、自遮挡，与互联网图像差异大，VLM 难覆盖
-      具身 VQA……</li>
-  <li><b>训练目标。</b>next-token 似然与连续动作生成的优化目标不同；性能影响须由原文实验说明。</li>
-</ul>
-```
-The list keeps every technical claim, but the reader now sees the three aspects at a glance instead
-of decoding three lookalike paragraphs. Apply the same conversion to sequential stages
-(Inspiration / Integration phases), enumerated findings (每个 5.2.x 小节的结论), and
-failure-mode inventories.
+- **Parallel, comparable items** → **list or table**, with one framing sentence and enough
+  detail to distinguish the items.
+- **Dependent steps, derivation, or one causal claim** → **prose or a process diagram**, keeping
+  the necessary reasoning and evidence together.
+- Choose the form that makes the relationship visible; do not convert a method's dependent
+  steps into disconnected bullets merely because they can be numbered.
 
 ### Still true: don't over-fragment
 
@@ -89,32 +64,39 @@ failure-mode inventories.
   own line, then explain it below.
 - A list item must be a **complete explanatory unit** (what it is / how it works / why it
   matters), never a keyword fragment. Bullet-shrapnel (标题式碎词) is as wrong as the walls.
-- The top **精华提炼** callout follows the same list discipline: one conclusion sentence + 3–5
-  parallel bullets.
+- The top **精华提炼** callout gives a brief overall judgment and a few nonredundant takeaways
+  drawn from the source's actual contributions; do not pad it to a fixed count.
 
-### Synthesis, not paragraph-by-paragraph translation
+### Analytical self-check across source types
 
-For every major H2, lead with the specific point the reader should retain, then select the
-source facts needed to establish it. Do not follow the paper's paragraph order merely to
-restate it in Chinese. Where the source compares approaches, give the reader the comparison:
-**named example → mechanism or protocol → distinguishing tradeoff → supporting evidence or
-boundary**. Close with a short inference only when the evidence warrants one, and label it as
-this reading's inference rather than the authors' result.
+For each substantive section, make the answer to the relevant questions clear: What claim or
+technical choice does this section explain? How does the mechanism, data process, or evaluation
+protocol work? What evidence and conditions support the result? What distinguishes it from a
+meaningful alternative, and what limits that comparison? These are review questions, not a
+required paragraph order or a demand to fill fields the source does not report. Make the point
+clear early, but let essential definitions or setup come first when needed.
 
-Before accepting a section, scan its blocks: if it contains two or more families, criteria,
-failure modes, or stages but only consecutive prose paragraphs, turn the parallel parts into
-complete bullets or a comparison table. Keep the causal explanation that connects them in
-short prose. A section made of generic category definitions without representative methods or
-evidence has not yet been analyzed deeply enough.
+Do not follow the source's paragraph order merely to restate it in Chinese. When the source
+compares alternatives, explain the concrete difference and evidence; when it presents one
+design, trace its inputs, operations, outputs, and consequences; when it contributes data or a
+benchmark, explain the construction or protocol and what its tests can establish. Attribute
+original results, cited studies, and this reading's inferences separately. If several
+comparable items are buried in consecutive paragraphs, expose the comparison with complete
+bullets or a table, while preserving the causal explanation in prose.
+
+If an important method or pipeline appears in several parts of the note, give the reader one
+place to follow its purpose, state or data representation, main operations, training or
+construction, evidence, and material cost where the source reports them. Later references
+should add a new distinction or point back to that explanation, not repeat its name and slogan.
 
 ### Open with the issue, then develop the evidence
 
 Sections that stay as prose (问题定义、动机、综述引言) should open with a short
 statement of the issue before the detailed evidence.
 
-- **The first paragraph under a section should state its point in 1–2 sentences.** Then
+- **The opening should make the section's question or point clear within a short span.** Then
   develop the mechanism, evidence, and qualification in following paragraphs or structured
-  blocks. Do not front-load several long setup paragraphs before stating the section's claim.
+  blocks. Do not front-load several long setup paragraphs before revealing the section's role.
 - Paragraph length follows the argument; split a dense block at changes in idea without
   deleting distinct technical claims or necessary context. Use the character-count review in
   `beautify.md` as a warning gate, not a target for deleting content.
@@ -144,23 +126,22 @@ the rewritten section unless they are genuinely duplicated or incorrect.
 
 - Convert parallel facts into complete explanatory bullets: each bullet should state what the
   item is, how it works or differs, and why it matters. Do not leave keyword fragments.
-- Use a comparison table when several methods/options share the same dimensions; keep the
-  interpretation paragraph after the table.
-- Use H2/H3 to expose genuine conceptual layers, then place paragraphs, figures, lists, and
-  tables in the reader's learning order: context → evidence/mechanism → comparison → takeaway.
+- Use a comparison table only when several methods/options share concise dimensions and the
+  layout is easier to scan than prose or bullets. Add interpretation without repeating its rows.
+- Use H2/H3 for genuine conceptual layers. Arrange paragraphs, figures, lists, and tables so
+  each claim has the setup and evidence needed to understand it; avoid a fixed block order.
 - Do not shorten a section merely because it looks long. Split and reorganize it when the
   information is valuable; delete only repetition, filler, or unsupported claims.
 - After rewriting, cross-check against the evidence note/source section and confirm that every
-  unique number, condition, failure case, and conclusion still appears.
+  material number, condition, failure case, and conclusion still appears.
 
 ## Anchors / sub-titles: short and sharp
 
 - Section anchors should be crisp nouns: "问题定义"、"相关工作"、"因子化表示" —
   **not** conversational questions like "论文在做什么、为何这样做".
 - Prefer the terminology the field actually uses.
-- Use a real H3 when an H2 contains several genuine subtopics and each subtopic supports at
-  least two paragraphs or one paragraph plus a grouped list/table. Never simulate a subsection
-  with a paragraph-opening pattern such as `**三维重建。** ...` or `**动态重建。** ...`.
+- Use a real H3 when a subtopic needs sustained treatment and helps navigation. Do not turn
+  every bold lead into a heading or simulate a series of subsections with repeated bold leads.
 - Do not promote a one-sentence label into H3. In that case, keep it inside the paragraph or
   use a list label only when the surrounding items are truly parallel.
 - In dense method sections, use **H3 for real modules/stages**, short paragraphs for mechanism
@@ -175,10 +156,9 @@ discusses substantively or that appear as meaningful experimental baselines: wha
 their limitation, and the resulting gap. Do not turn every bibliography citation into a
 mini-summary. Merge works with the same role and keep the section proportional to the paper.
 
-For a dense Related Work section, use this hierarchy: **H3 for each research lineage → one
-orientation paragraph → bullets/table grouped by technical route → optional synthesis
-paragraph**. The bullets enumerate comparable method families; they do not replace the
-historical or causal explanation.
+For a dense Related Work section, group by the source's meaningful research lineages. Use H3
+when a lineage needs sustained explanation, and bullets or a table when several approaches
+share comparison dimensions. Keep the historical or causal explanation that connects them.
 
 ## Tone
 

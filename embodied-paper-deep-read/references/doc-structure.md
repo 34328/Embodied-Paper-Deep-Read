@@ -28,8 +28,9 @@ stage or parameter.
 ## Shared five-chapter spine
 
 Use this chapter order and these chapter functions for both categories. Keep five numbered
-chapters; adapt the subsections to the source. For a survey, chapters 2–3 may use the titles
-given in "Surveys and reviews" below to reflect synthesis rather than original experiments.
+chapters; adapt their titles and subsections to the source. In particular, name chapters 2–3
+for the technical contribution and evidence actually present, rather than implying an original
+method or experiment where there is none.
 
 - **论文基本信息** — *front matter, unnumbered.* A table: 标题 / 作者 / 机构 / 发布
   (arXiv id + date, when available) / 项目主页 (when available) / 研读类别（模型类或数据类）.
@@ -81,11 +82,12 @@ baseline comparisons, robustness, and failure analysis that the source reports.
 
 ### Reports with both kinds of contribution
 
-Choose one of the two categories as the organizing path, then give each substantial secondary
-contribution a named subsection under chapter 2 and matching evidence under chapter 3. For
-example, a foundation-model technical report may need full sections on data construction,
-robot evaluation, and deployment; a data report may need a detailed account of the models used
-to establish downstream value. Do not compress such content into a passing sentence or omit it
+Choose one of the two categories as the organizing path. Explain each substantial secondary
+contribution in chapter 2, with a named subsection when its detail warrants one; discuss its
+specific evidence in chapter 3 where the source reports it. For example, a foundation-model
+technical report may need full sections on data construction, robot evaluation, and deployment;
+a data report may need a detailed account of the models used to establish downstream value.
+Do not compress such content into a passing sentence or omit it
 because it is not the primary contribution. Allocate detail by technical importance and
 evidence, not by paper genre or equal word count.
 
@@ -93,22 +95,22 @@ evidence, not by paper genre or equal word count.
 
 Keep the same five numbered chapters and choose 模型类 or 数据类 by the subject being surveyed.
 Do not describe a survey's taxonomy as a newly proposed model, or its cited works as the
-survey authors' experiments. When the survey has no original method or common experiment,
-use the chapter 2–3 titles below instead of the original-study titles above. Adapt the internal
-sections to the evidence:
+survey authors' experiments. Name chapters 2–3 for what the source actually contributes and
+what evidence it analyzes; do not force the original-study titles onto a review-only source.
+Adapt the internal sections to the evidence:
 
-- **1 研究背景与动机** — the unresolved problem and the survey's own organizing question;
+- **Chapter 1** — the unresolved problem and the survey's own organizing question;
   explain gaps in prior reviews or terminology only when the source identifies them.
-- **2 方法谱系与技术机制** (or **数据与评测谱系** for a data-focused survey) — the survey's
-  classification axes and the substantive families under them. Explain representative named
-  approaches, how each works, what it preserves or measures, and the tradeoff that separates
-  it from neighboring approaches. Give a major axis its own H2/H3 when needed; do not flatten
+- **Chapter 2** — organize the substantive approaches, data resources, pipelines, or evaluation
+  designs along the source's own axes. Explain the mechanisms or protocols behind material
+  examples and their differences. Give a major axis its own H2/H3 when needed; do not flatten
   several axes into one general-definition paragraph.
-- **3 证据、评测与比较** — what the cited studies and benchmarks actually show, which
-  comparisons share a protocol, and what remains untested. Distinguish source-work results
-  from the survey authors' synthesis. A landscape or scale table is not an experiment ranking.
-- **4 局限性与适用边界** and **5 结论与意义** — separate the survey's stated open problems from
-  this reading's assessment, then explain which research choices the synthesis supports.
+- **Chapter 3** — explain what the source's own analysis and the cited studies establish,
+  which comparisons share conditions, and where comparison is limited. Attribute cited results
+  to the underlying studies and distinguish them from the survey authors' synthesis. A
+  landscape or scale table alone is not an experiment ranking.
+- **Chapters 4–5** — separate the survey's stated open problems from this reading's assessment,
+  then explain which implications the evidence supports.
 
 If the survey has no original training run or common evaluation, say so once where it affects
 interpretation; spend the rest of the space on concrete cited mechanisms and evidence.

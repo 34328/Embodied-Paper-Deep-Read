@@ -125,8 +125,9 @@ for the argument and every material technical contribution, including supporting
 and relevant appendix evidence. Map each to a final document chapter; use
 `references/reading-scope.md`, `references/doc-structure.md`, and `references/content-depth.md`
 to inventory, classify, and assess the source without dropping secondary technical content.
-Record whether the source is a primary paper, technical report, or survey/review; this format
-changes how chapters 2–3 present mechanisms and evidence, not the two focus categories.
+Record which contributions are original work and which synthesize cited work. Let the actual
+contributions and evidence shape chapters 2–3; document format does not create a third focus
+category or excuse leaving out a material contribution.
 
 ### 2. Inventory and extract figures
 
@@ -175,9 +176,12 @@ Draft one chapter at a time from `<slug>_evidence.md`. Reopen only the Markdown 
 cited page, or PDF view needed to verify numbers, dimensions, or ambiguous claims. Keep the
 evidence notes and figure manifest as restartable checkpoints; do not retain all raw page text
 in the working context. Before publication, compare the source-wide evidence inventory with
-the finished draft: every material mechanism, representative method family, benchmark, result,
-and limitation must have a concrete explanation at a named location. Revise a generic summary
-that merely restates the source's prose instead of making its technical distinctions clear.
+the finished draft. Every material item actually present in the source, whether a mechanism,
+data process, protocol, result, or limitation, needs a concrete explanation at a named location.
+Check central conclusions in the other direction: each must trace to cited evidence and its
+conditions, with original results, cited studies, and this reading's inferences distinguished.
+Revise a generic summary that merely restates the source's prose instead of explaining its
+technical distinctions. Use the shared review questions in `references/writing-style.md`.
 
 Use the source reference described in `references/doc-structure.md`: arXiv when available,
 otherwise an available DOI, publisher, or official project link. When no public URL exists,
@@ -190,10 +194,10 @@ for Markdown), then run the prose self-check in `writing-style.md` and scan it:
 python3 "<skill-dir>/scripts/check_text_density.py" --threshold 220 "<draft-path>"
 ```
 
-The checker reports CJK-heavy paragraphs, list items, and table cells for review. Exit code 1
-means candidates need review, not automatic rejection: split unrelated content, or retain a long
-block when it carries one continuous argument. A clean exit does not certify the layout or
-quality of synthesis; inspect consecutive shorter paragraphs and tables as reading units too.
+The checker reports CJK-heavy individual blocks for review. Exit code 1 means candidates need
+review, not automatic rejection: split unrelated content, or retain a continuous argument when
+its structure is clear. A clean exit does not detect shorter paragraphs stacked into a text
+wall and does not certify layout or synthesis; inspect sections and tables as reading units too.
 Publish the exact reviewed draft. Keep the density rules in `beautify.md`.
 
 ### 4. Publish through one backend
@@ -216,10 +220,10 @@ ratios, latex, URLs, and version strings.
 
 ## Completion checks
 
-- Cover the source's argument, limitations, and relevant appendix material. For an original
-  study, explain its method and decisive experiments. For a survey, explain its taxonomy,
-  representative mechanisms, cited evidence, and limits of cross-study comparison. Include
-  training, experiments, or ablations only when the source actually reports them.
+- Cover the source's argument, material technical contributions, supporting evidence,
+  limitations, and relevant appendix material. Explain mechanisms or protocols in enough detail
+  to understand how they work and what the evidence establishes. Include training, experiments,
+  ablations, or cross-study comparison only where the source actually supports them.
 - Use one of the two categories in `references/doc-structure.md` as the organizing path, and
   include every material model, data, evaluation, system, safety, or deployment contribution
   reported in the source, whether primary or secondary.

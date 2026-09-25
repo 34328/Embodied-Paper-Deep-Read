@@ -8,9 +8,11 @@
 Three callout types, each with a fixed emoji + background color on Feishu:
 
 - **💡 精华提炼** — `light-blue`. Place one callout immediately after the 论文基本信息
-  table. Write **one sentence stating the paper's central conclusion, followed by 3–5 concise
-  bullets** with bold labels such as 核心方法、规模/数据、主要结果、迁移价值. Keep only
-  headline facts and decisive numbers; move module-level implementation details into 方法.
+  table. Lead with a concise, evidence-backed statement of the source's main contribution or
+  conclusion, then add a few non-redundant bullets that expose its distinct technical points.
+  Choose labels to fit the actual source: model mechanism, data pipeline, evaluation protocol,
+  system behavior, and evidence limits are possible topics, not required fields. Keep only
+  headline facts and decisive numbers; explain implementation details in the relevant chapter.
   This executive-summary list is an intentional exception to the prose-first rule.
 - **⭐ 核心创新** — `light-yellow`. **Only when the paper has a genuine standout
   innovation.** Fold it into the relevant method section, don't give it its own heading.
@@ -33,6 +35,11 @@ Feishu callout syntax (confirm exact attributes against the lark-doc embedded sk
   readable. Give explanatory columns enough width with a sensible `colgroup`. If a long-text
   table is still cramped, split it by theme or use explanatory bullets instead of shrinking
   the text. Do not spend extra iterations chasing pixel-perfect width when it reads well.
+- Use tables for brief values compared along shared dimensions. A risk, mechanism, or evidence
+  column is useful when its cells remain compact; move explanations that need full sentences
+  into adjacent prose or complete bullets, with source locators next to the supported claims.
+  Avoid repeating the same page locator in every row when one nearby citation clearly supports
+  the grouped comparison. Do not delete an informative column merely because it discusses risk.
 - Preserve sensible column ratios when scaling a table to full width.
 
 ## Paragraph rhythm and page density
@@ -77,24 +84,12 @@ conditions, and caveats survive the change. The checker never edits or shortens 
 
 ## Results / discussion / limitations: structure every section for scanning
 
-These sections are especially prone to text walls, including one 300–400 字 paragraph
-for each finding or a run of bold-lead paragraphs. When a result, discussion, or limitation
-section contains two or more parallel findings, conditions, comparisons, or failure modes,
-use the pattern below. A single continuous argument can stay as connected prose.
-
-**Scannable skeleton for parallel findings:**
-1. One **framing sentence**: what this experiment asks and the headline verdict.
-2. The **evidence**: a centered figure, a full-width table, or a short list of the decisive
-   numbers — whichever shows the comparison most clearly (don't repeat the same numbers in all
-   three).
-3. A **list of findings/observations**, one complete bullet each, when there are 2+ parallel
-   results, conditions, or failure modes. A single continuous result stays as one short
-   paragraph.
-4. Optional one-line takeaway.
-
-Three task-by-task comparisons belong in a **list** or table, not one paragraph. Group
-reported failure modes in a list so their conditions and differences are explicit. Keep a
-single continuous result as 2–4 sentence paragraphs; do not force it into a list.
+These sections are especially prone to text walls. State the result or limitation clearly,
+then choose the least elaborate form that lets the reader inspect its evidence: connected prose
+for one argument, complete bullets for distinct findings, a compact table for shared comparison
+fields, or a figure when visual detail matters. Do not restate the same findings in a table,
+bullets, and a following paragraph. Keep the interpretation that explains *why* the evidence
+matters; move long reasoning out of table cells.
 
 **Highlight the key result, sparingly.** At most one accent per result section:
 - a central row of the results table (light-blue + bold), when the metric and
@@ -111,8 +106,7 @@ structure for supporting findings.
   everything — no whiteboard for something a sentence handles, no callout for ordinary
   prose.
 - Use a Mermaid pipeline when the method or data process meets the trigger in
-  `content-depth.md`. For a model method, place it before the input/output table;
-  for a data pipeline, place it where its stages are explained. Verify its rendered
+  `content-depth.md`. Place it where its stages are explained. Verify its rendered
   preview and do not duplicate the source's own architecture figure.
 
 ## Backend note

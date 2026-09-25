@@ -78,20 +78,27 @@ corresponding `fetch_arxiv.py` or `index_pdf.py` command without `--no-text` to 
 Maintain `<slug>_evidence.md` with compact entries:
 
 ```text
-METHOD — factorized decoder — PDF pp. 5–6 (printed pp. 3–4)
-- input/output shapes: ...
-- mechanism and why it matters: ...
-- unresolved: exact head count; check Appendix B
+ITEM — material claim, mechanism, or protocol — PDF p. n (printed p. m if different)
+- attribution: source's own contribution or result / cited study / authors' synthesis
+- mechanism or evaluation conditions: ...
+- evidence, outcome, and limits: ...
+- draft location: chapter or section ...
+- unresolved detail that affects interpretation: ...
 ```
 
 Distinguish zero-based tool indexes, one-based PDF pages, and printed paper pages. Use `PDF p.`
 as the required locator and add `printed p.` when it differs.
 
 Include motivation, contributions, related-work groups, limitations, appendix evidence, and
-figure/table candidates. For an original study, capture its reported method, dimensions,
-datasets, training, decisive results, and ablations. For a survey, capture its classification
-axes, representative named mechanisms and protocols, comparison dimensions, cited evidence,
-and gaps in comparability; do not imply that cited results are the survey authors' experiments.
+figure/table candidates. For a model or algorithm study, capture its reported method,
+interfaces and dimensions, data and training, decisive results, and ablations. For data or
+benchmark work, capture provenance and curation, task and metric definitions, evaluation
+conditions, and evidence of quality or utility. For an integrated technical report, capture
+the links among its material model, data, training, system, and evaluation components. For a
+survey, capture its classification axes, representative named mechanisms or protocols, cited
+evidence, and gaps in comparability; do not imply that cited results are the survey authors'
+experiments. Record only areas the source actually covers and attribute each result to its
+origin; reserve this reading's own deductions for clearly labeled synthesis in the draft.
 Attach page numbers to every numerical or architecture claim; when only MinerU Markdown
 evidence is available, mark it as `md section: ...` and verify before final publishing.
 

@@ -107,6 +107,6 @@ bash install.sh --check --agent codex
 用 embodied-paper-deep-read 精读这篇论文，并发布到我的飞书文档库：https://arxiv.org/abs/2503.20020
 ```
 
-Codex 可用 `$embodied-paper-deep-read`，Claude Code 可用 `/embodied-paper-deep-read`，也可以直接描述任务。需要本地文件时，可要求输出 Markdown；每篇论文会生成独立工作目录。研读类别只有模型类和数据类，二者沿用同一套五章骨架；技术报告中出现的数据管线、模型、评测、系统、安全或部署内容，都会按其技术重要性纳入精读。选中的论文图会从 PDF 重渲染或裁切为高清版本。
+Codex 可用 `$embodied-paper-deep-read`，Claude Code 可用 `/embodied-paper-deep-read`，也可以直接描述任务。每篇论文会生成独立工作目录：默认在当前工作区；如需集中存放，可在提示中指定父目录，例如“把本篇本地文件放在 `~/Desktop/Auto Paper Reading` 下”。原 PDF、MinerU 解析、证据笔记、图片、草稿和 Markdown 输出都会放进该论文目录；最终发布到飞书时，本地中间文件仍保留在那里。远端 Agent 的工作区不等于这台电脑的桌面。研读类别只有模型类和数据类，二者沿用同一套五章骨架；技术报告中出现的数据管线、模型、评测、系统、安全或部署内容，都会按其技术重要性纳入精读。选中的论文图会从 PDF 重渲染或裁切为高清版本。
 
 更多安装选项见 `bash install.sh --help`；开发说明见 [CONTRIBUTING.md](CONTRIBUTING.md)。

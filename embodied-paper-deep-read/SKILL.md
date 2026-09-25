@@ -13,13 +13,17 @@ is an external write: do it only when the user's request includes producing/publ
 deep-read note, and never overwrite an existing document unless the user supplied that target
 or explicitly approved replacement.
 
-Create exactly one well-named top-level folder per paper in the current workspace, using the
+Use an output root explicitly supplied by the user when available; otherwise use the current
+workspace. Under that root, create exactly one well-named top-level folder per paper, using the
 paper title plus arXiv ID when available, for example
 `World-R1_Reinforcing_3D_Constraints_for_Text-to-Video_Generation_2604.24764/`. Keep all durable
 artifacts for that paper inside this folder. Do not create generic `work/`, scattered temp
 folders, or nested paper-specific wrappers. Put MinerU output under `mineru/full.md` and
 `mineru/images/`; keep evidence notes, page indexes, figure manifests, publisher source, state,
-and previews alongside `mineru/`.
+and previews alongside `mineru/`. When Feishu is the final destination, keep local source and
+intermediate files in this paper folder; the published note lives in Feishu. A remote/cloud
+Agent's workspace is not the user's Mac Desktop, so use a local Agent or an explicitly
+available shared path when files must persist on the user's computer.
 
 ## Privacy and credentials
 

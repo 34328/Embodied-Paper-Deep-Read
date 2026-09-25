@@ -74,3 +74,16 @@ DOI, publisher page, or official project page; never copy a sample ID. For examp
 ```
 If the user supplied a PDF without a public URL, link to the copied file in the same paper
 folder as `📄 **原文**：[PDF](<slug>.pdf)` rather than inventing an arXiv link.
+
+## Final text-density check
+
+Before reporting the Markdown note complete, scan the exact final `.md` file, including any
+edits made while placing figures:
+
+```bash
+python3 "<skill-dir>/scripts/check_text_density.py" --threshold 220 "<paper-folder>/<slug>.md"
+```
+
+Review each reported block. A result over 220 CJK characters is a review trigger, not an
+automatic cut-off; retain a longer block when it expresses one continuous argument. The
+checker does not edit the file.

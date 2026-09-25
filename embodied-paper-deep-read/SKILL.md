@@ -178,7 +178,7 @@ Save the exact body draft inside `<paper-folder>` (`<slug>_draft.xml` for Feishu
 for Markdown), then run the prose self-check in `writing-style.md` and scan it:
 
 ```bash
-python3 <skill-dir>/scripts/check_text_density.py --threshold 220 "<draft-path>"
+python3 "<skill-dir>/scripts/check_text_density.py" --threshold 220 "<draft-path>"
 ```
 
 The checker reports CJK-heavy paragraphs, list items, and table cells for review. Exit code 1

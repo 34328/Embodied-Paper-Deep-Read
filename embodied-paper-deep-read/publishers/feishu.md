@@ -155,6 +155,9 @@ agent-driving notes; prefer them over this file when they disagree.
 4. **Verify once after all moves.** Re-fetch the outline and affected sections. Confirm that:
    - every numbered H1/H2/H3 has `seq` + `seq-level="auto"` in a targeted `--detail full` fetch;
    - heading text has no hand-written numeric prefix (`2 方法`, `2.1 网络架构`, etc.);
+   - the five numbered H1 chapters have exactly four native `<hr/>` separators, only between
+     chapters 1–2, 2–3, 3–4, and 4–5; there are none within a chapter or around front matter
+     and the source section;
    - every table spans the full usable width and every cell paragraph is centered;
    - every image/whiteboard is centered, and every long/loss formula is a standalone
      `align="center"` paragraph;

@@ -114,6 +114,14 @@ Before publishing, inspect the generated XML: numbered H1/H2/H3 blocks must have
 fetch the outline and representative headings with `--detail full`; reject any numbered title
 whose text still begins with a pattern such as `2 方法` or `2.1 网络架构`.
 
+## Chapter separators (Feishu only)
+
+For the Feishu XML version, insert one native `<hr/>` between each pair of the five numbered
+H1 chapters: exactly four separators, immediately before chapters 2–5. Do not put separators
+inside chapters, between H2/H3 sections, or around the unnumbered front matter and source
+section. This is the only decorative divider in the note; use it to mark chapter boundaries,
+not to break up ordinary content. Local Markdown keeps its heading-only hierarchy.
+
 For a non-Feishu backend (local md), numbering is literal Markdown `#`/`##` and you may
 write "1"、"1.1" as text — see `publishers/local-md.md`. The auto-numbering rule is a
 Feishu concern; keep the *structure* identical across backends.

@@ -17,6 +17,9 @@ find "<paper-folder>/mineru/images" -maxdepth 1 -type f | sort
 Use Markdown image references as the primary inventory. Match each image to nearby caption
 or section text. Select overview, architecture, decisive qualitative comparison, useful
 ablation, and failure cases. Usually 3–6 figures are enough; each must add information.
+Number figures sequentially across the note (`图 1`, `图 2`, …), independent of chapter. Keep
+that number consistent between the manifest, caption, and any in-note reference; do not add
+chapter prefixes for the usual short figure set.
 
 If the MinerU task is still pending, wait for it to finish before finalizing the figure
 selection. If MinerU fails, stop the deep-read per `SKILL.md`; PDF image cropping cannot replace

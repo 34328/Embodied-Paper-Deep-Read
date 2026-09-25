@@ -116,8 +116,11 @@ Create the paper folder first, then acquire the source so PDF/cache artifacts st
 that folder. After the privacy and credential checks, run MinerU once. Read
 `references/reading-scope.md`, inspect MinerU Markdown by section in bounded batches, and reopen
 the PDF or optional `_pages.jsonl` only to verify page numbers, equations, tables, and ambiguous claims. Build a
-compact `<slug>_evidence.md` containing page-cited facts for motivation, method, data,
-experiments, limitations, relevant appendix evidence, figures, and unresolved questions.
+compact `<slug>_evidence.md` containing a source-wide coverage inventory and page-cited facts
+for the argument and every material technical contribution, including supporting contributions
+and relevant appendix evidence. Map each to a final document chapter; use
+`references/reading-scope.md`, `references/doc-structure.md`, and `references/content-depth.md`
+to inventory, classify, and assess the source without dropping secondary technical content.
 
 ### 2. Inventory and extract figures
 
@@ -195,6 +198,9 @@ ratios, latex, URLs, and version strings.
 
 - Cover the paper's argument, main method, decisive experiments, limitations, and relevant
   appendix material.
+- Use one of the two categories in `references/doc-structure.md` as the organizing path, and
+  include every material model, data, evaluation, system, safety, or deployment contribution
+  reported in the source, whether primary or secondary.
 - Cite page numbers in evidence notes so any claim can be reopened without rereading the PDF.
   Carry the page or figure/table locator into the final note for pivotal technical and
   quantitative claims.

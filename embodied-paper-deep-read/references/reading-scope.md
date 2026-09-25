@@ -47,12 +47,18 @@ verify an otherwise usable MinerU passage but cannot replace a missing or unusab
 
 ## Two-pass reading
 
-1. **Map the paper.** Read metadata/abstract, Markdown heading outline, introduction,
-   conclusion, limitation statements, and appendix headings. Record the section ranges and,
-   where possible, corresponding PDF pages.
-2. **Collect evidence by topic.** Read relevant Markdown sections for method, datasets,
-   training, experiments, failure cases, and appendix details. Use bounded slices of roughly
-   8–12k extracted characters. Summarize each slice before opening the next.
+1. **Map the source.** Read metadata/abstract, stated contributions, Markdown heading outline,
+   introduction, conclusion, limitation statements, and appendix headings. Identify whether the
+   central focus is model类 or data类, then inventory every reported technical area: model/system
+   design, data sources and processing, training, evaluation/benchmark protocol, real-world or
+   system tests, safety/deployment, failures, and limitations. Record section ranges and, where
+   possible, corresponding PDF pages. Treat “technical report” as a document format; do not use
+   it to narrow the coverage inventory.
+2. **Collect evidence by topic.** Read relevant Markdown sections for each inventoried area,
+   including supporting contributions outside the selected category, plus relevant appendix
+   details. Use bounded slices of roughly 8–12k extracted characters. Summarize each slice
+   before opening the next, and map every material item to the final chapter where it will be
+   explained.
 
 Do not issue a single command/tool call that returns the complete `full.md`.
 Skip the final bibliography list, but read the Related Work prose and any references discussed

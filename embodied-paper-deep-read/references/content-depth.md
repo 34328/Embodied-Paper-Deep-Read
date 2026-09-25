@@ -20,6 +20,30 @@ For a parameter, data ratio, protocol detail, or ablation that materially affect
 interpretation but is absent from the source, write `原文未披露` rather than estimating
 or filling a plausible default. Do not turn an unknown into a claim of absence.
 
+## Coverage applies across both reading categories
+
+Use the two categories in `doc-structure.md` to choose emphasis, not to decide which reported
+technical content may be omitted. A paper or technical report may combine a model, data
+pipeline, training recipe, benchmark, real-world system, safety analysis, and deployment
+details. Cover each reported area that supports a central claim, affects reproducibility or
+interpretation, or determines where the result can be used, even when it is secondary to the
+selected category.
+
+While building `<slug>_evidence.md`, keep an internal coverage inventory for the areas present
+in the source: model/system design; data sources and processing; training; experiments or
+benchmark protocol; real-world/system evaluation; safety, privacy, or deployment; and
+limitations/failures. For each material item, capture the steps or mechanism, consequential
+choices and parameters, rationale when stated, evidence and outcome, limitations, and page
+locators. Map it to a final chapter before drafting. Do not add empty headings for absent
+content. When an unreported detail is necessary to interpret or reproduce a central claim,
+state `原文未披露`.
+
+Match detail to the source's technical density, not its label as a paper or report. For a dense
+report, organize related details into compact tables and process diagrams, while explaining
+the choices and consequences in prose. For a shorter paper, preserve the same coverage standard
+without padding. Summarize repeated or peripheral details, but retain every material technical
+claim, condition, caveat, and causal link.
+
 ## Methods need real dimensions
 
 - For model and algorithm papers, explain each material module's mechanism and role;
@@ -36,7 +60,7 @@ or filling a plausible default. Do not turn an unknown into a claim of absence.
 For a model or algorithm with at least three dependent stages or a meaningful
 output/training branch, place one concise pipeline **after the architecture
 explanation and before the module input/output table when one is warranted**. For a
-data-pipeline contribution, a process diagram may instead show the reported
+reported data pipeline, a process diagram may instead show the reported
 acquisition, processing, quality-control, and release/evaluation path; it does not
 require a model-module table. On Feishu use a Mermaid whiteboard; on Markdown use
 a fenced Mermaid block.
@@ -74,23 +98,29 @@ on its own centered line:
   move coefficients into a centered table.
 - On Markdown use `$$…$$` display math for these formulas, not inline `$…$`.
 
-## Training-data table: size / ratio / purpose
+## Training data and data-resource tables
 
-When the source reports training-data composition, give a table with **size, mixing
-ratio, and purpose/stage** using the main text and relevant appendix. If a value is
-not reported, mark the consequential gap `原文未披露` instead of calculating a ratio
-from incompatible counts.
+When the source reports model-training composition, give a table using the main text and
+relevant appendix. Include the fields that are reported and material: source/dataset, size or
+units, modality or task, mixing ratio, filtering or annotation, purpose/training stage, and
+whether it is used for training, validation, or evaluation. If a value is not reported, mark a
+consequential gap `原文未披露` instead of calculating a ratio from incompatible counts.
+
+For a data resource or benchmark, use a table when it makes the source's data inventory clearer.
+Select fields supported by the paper, such as source, scale, modality, task, annotation, split,
+quality controls, license, and intended use. Explain relationships and design rationale in
+prose; do not turn a table into a substitute for describing the pipeline.
 
 - If the paper only does single-stage finetuning, say so honestly ("监督用途") — **do not
   invent** pre-training / post-training stages that aren't there.
 - Distinguish geometry-only vs. motion-annotated datasets if the paper does.
 
-## Data-pipeline and benchmark contributions
+## Data pipelines, datasets, and benchmarks wherever they appear
 
-Apply this section when data governance, a data pipeline, a dataset, or a benchmark
-is the **primary contribution** identified in `doc-structure.md`. Explain the
-technical decisions that make the contribution work and the evidence that tests
-them; use only fields supported by the source.
+Apply this section whenever the source contains material data governance, a data pipeline, a
+dataset, or a benchmark, whether it is the primary contribution or part of a model/system
+technical report. Explain the technical decisions that make the contribution work and the
+evidence that tests them; use only fields supported by the source.
 
 - For a data pipeline or governance report, trace reported provenance, collection
   and selection rules, annotation or synthesis, deduplication, quality control,
@@ -100,6 +130,16 @@ them; use only fields supported by the source.
   splits, metric computation, allowed inputs, baseline setup, and any leakage or
   contamination controls. Explain what the benchmark measures and what its
   protocol cannot establish. Mark important undisclosed controls explicitly.
+
+## System, real-world, safety, and deployment details
+
+When these details are part of the reported contribution or evidence, explain the concrete
+setup rather than summarizing it as “validated in the real world.” Include reported robot or
+hardware, sensors, control frequency, action interface, runtime components, latency or compute,
+operator intervention, task/environment conditions, number of trials, safety constraints, and
+deployment failures when available. Separate an illustrative demo from a controlled evaluation;
+state what the evidence does and does not establish. Mark material missing details as
+`原文未披露` and cite the relevant pages.
 
 ## Experiment tables: faithful but selective
 

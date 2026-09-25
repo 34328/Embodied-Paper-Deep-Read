@@ -93,9 +93,11 @@ agent-driving notes; prefer them over this file when they disagree.
 ## Publish workflow
 
 1. **Create / overwrite the text body first, figures second.**
-   - Save the complete XML body as `<paper-folder>/<slug>_draft.xml`. Run
-     `python3 <skill-dir>/scripts/check_text_density.py --threshold 220 <draft.xml>` and
-     review each reported block with `references/writing-style.md` and `references/beautify.md`.
+   - Save the complete XML body as `<paper-folder>/<slug>_draft.xml`. Replace the path
+     placeholders with their actual values, then run
+     `python3 "<skill-dir>/scripts/check_text_density.py" --threshold 220 "<paper-folder>/<slug>_draft.xml"`
+     and review each reported block with `references/writing-style.md` and
+     `references/beautify.md`.
      Restructure unrelated or parallel content before publishing; preserve all technical claims,
      evidence, citations, and caveats. Publish the exact reviewed XML.
    - New doc: `lark-cli docs +create --parent-position my_library --content '<title>…</title>…'`
@@ -158,11 +160,12 @@ agent-driving notes; prefer them over this file when they disagree.
      `align="center"` paragraph;
    - after media placement, save one full XML fetch locally and run the density checker on its
      JSON response, which extracts `data.document.content` without loading the whole body into
-     the working context:
+     the working context. Replace `<id>` and path placeholders with the actual document ID and
+     paths:
      ```bash
-     lark-cli docs +fetch --doc <id> --doc-format xml --format json \
+     lark-cli docs +fetch --doc "<id>" --doc-format xml --format json \
          > "<paper-folder>/<slug>_published.json"
-     python3 <skill-dir>/scripts/check_text_density.py --threshold 220 \
+     python3 "<skill-dir>/scripts/check_text_density.py" --threshold 220 \
          "<paper-folder>/<slug>_published.json"
      ```
      Compare every flagged block with the approved draft. If Feishu merged distinct paragraphs,

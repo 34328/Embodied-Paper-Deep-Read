@@ -126,7 +126,7 @@ Run once:
 ```bash
 python3 <skill-dir>/scripts/extract_figures.py "<paper-folder>/<slug>.pdf" \
   --batch "<paper-folder>/crop-spec.json" \
-  --manifest "<paper-folder>/crop-figures.manifest"
+  --manifest-out "<paper-folder>/crop-figures.manifest"
 ```
 
 The batch crop defaults to 3× PDF scale. Set an entry's `zoom` higher when needed so its PNG
@@ -139,10 +139,10 @@ The crop manifest contains durable lines:
 <!-- FIG figs_hires/fig1.png | anchor:after-summary | w=720 | cap:图 1：…… -->
 ```
 
-Replace the corresponding provisional entries in `<paper-folder>/figures.manifest` with these
-crop entries. Do not pass the master manifest as `--manifest` for a mixed render/crop selection:
-`extract_figures.py` writes a new file and would erase the already-rendered entries. Check that
-every final master-manifest path resolves to the intended high-resolution image.
+`--manifest-out` creates a new crop manifest and refuses to overwrite an existing path. Replace
+the corresponding provisional entries in `<paper-folder>/figures.manifest` with these crop
+entries, then check that every final master-manifest path resolves to the intended
+high-resolution image.
 
 Keep stable descriptive anchors until publishing resolves backend block IDs.
 

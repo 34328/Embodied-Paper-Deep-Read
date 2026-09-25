@@ -26,17 +26,6 @@ FEISHU_READY=false
 # any files outside this list are left alone.
 MANAGED_DIRS="scripts references publishers agents"
 MANAGED_FILES="SKILL.md LICENSE requirements.txt requirements-dev.txt"
-REQUIRED_SKILL_FILES="
-  SKILL.md
-  scripts/fetch_arxiv.py scripts/index_pdf.py scripts/mineru_parse_pdf.sh
-  scripts/pdf_page_count.py scripts/render_figures.py scripts/extract_figures.py
-  scripts/normalize_cjk_punct.py scripts/_pymupdf.py
-  references/reading-scope.md references/figure-extraction.md references/content-depth.md
-  references/writing-style.md references/doc-structure.md references/beautify.md
-  publishers/feishu.md publishers/local-md.md
-  agents/openai.yaml
-"
-
 DEST=""
 AGENT="auto"
 DO_CHECK=false
@@ -299,15 +288,6 @@ status_targets() {
   esac
 }
 
-token_file_secure() {
-  [ -f "$TOKEN_FILE" ] && [ ! -L "$TOKEN_FILE" ] || return 1
-  python3 - "$TOKEN_FILE" <<'PY' >/dev/null 2>&1
-import os, stat, sys
-info = os.stat(sys.argv[1])
-sys.exit(0 if stat.S_ISREG(info.st_mode) and stat.S_IMODE(info.st_mode) == 0o600 else 1)
-PY
-}
-
 legacy_status() {
   local root item
   for root in "$CLAUDE_SKILLS" "$CODEX_SKILLS" "$HOME/.agents/skills"; do
@@ -320,148 +300,33 @@ legacy_status() {
   say "Older copies named paper-deep-read are never moved or deleted automatically."
 }
 
-feishu_auth_ready() {
-  local auth_json
-  command -v python3 >/dev/null 2>&1 || return 1
-  auth_json=$(lark-cli auth status --json --verify 2>/dev/null) || return 1
-  printf '%s\n' "$auth_json" | python3 -c '
-import json, sys
-try:
-    data = json.load(sys.stdin)
-except (ValueError, TypeError):
-    sys.exit(1)
-user = data.get("identities", {}).get("user", {})
-sys.exit(0 if user.get("available") is True and user.get("status") == "ready" and user.get("tokenStatus") == "valid" else 1)
-' >/dev/null 2>&1
-}
-
-feishu_runtime_status() {
-  local tool tool_path
-  for tool in node npm npx; do
-    if tool_path=$(command -v "$tool" 2>/dev/null) && "$tool" --version >/dev/null 2>&1; then
-      ok "$tool is available: $tool_path"
-    else
-      bad "$tool is missing or cannot start"
-    fi
-  done
-  say "Install or repair Node.js (includes npm/npx): https://nodejs.org/en/download/"
-}
-
-feishu_status() {
-  local lark_bin lark_version guidance_ready auth_ready
-  head_ "Feishu publishing"
-  FEISHU_READY=false
-
-  if lark_bin=$(command -v lark-cli 2>/dev/null); then
-    if ! lark_version=$(lark-cli --version 2>/dev/null); then
-      warn "lark-cli was found but cannot start"
-      feishu_runtime_status
-      say "Repair the CLI by following the official Feishu guide:"
-      say "  https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md"
-      return 0
-    fi
-    ok "lark-cli installed: $lark_version ($lark_bin)"
-    guidance_ready=true
-    if ! lark-cli skills read lark-doc >/dev/null 2>&1 || \
-       ! lark-cli skills read lark-shared >/dev/null 2>&1; then
-      warn "Feishu CLI guidance is incomplete; install the required CLI Skill from the official guide"
-      say "Guide: https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md"
-      guidance_ready=false
-    else
-      ok "Feishu CLI guidance is available"
-    fi
-    if feishu_auth_ready; then
-      ok "Feishu user authorization verified"
-      auth_ready=true
-    else
-      warn "lark-cli is installed, but Feishu authorization is not verified"
-      say "Complete app setup and browser login, then verify with: lark-cli auth status --json --verify"
-      say "Guide: https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md"
-      auth_ready=false
-    fi
-    if [ "$guidance_ready" = true ] && [ "$auth_ready" = true ]; then
-      ok "Feishu publishing is ready; no installation needed"
-      FEISHU_READY=true
-    fi
-    return 0
-  fi
-
-  warn "lark-cli is not installed"
-  feishu_runtime_status
-  say "Continue setup in the current Agent with the official Feishu guide:"
-      say "  帮我安装飞书 CLI：https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md"
-}
-
 status() {
   local roots=$1
-  local root target py venv ready saved_ifs
-  head_ "Status"
-  ready=true
-
-  py=$(command -v python3 2>/dev/null || true)
-  if [ -z "$py" ]; then
-    bad "python3 not found (Python 3.9+ required)"
-    ready=false
-  elif ! python_supported "$py"; then
-    bad "python3 is older than 3.9: $py"
-    ready=false
-  else
-    say "python3: $py"
-  fi
-
+  local root saved_ifs status_output status_code
+  local check_args=()
   saved_ifs=$IFS
   IFS=$'\n'
   for root in $roots; do
     IFS=$saved_ifs
-    target="$root/$SKILL_NAME"
-    local skill_files_ready=true item
-    for item in $REQUIRED_SKILL_FILES; do
-      if [ ! -f "$target/$item" ]; then
-        bad "skill file missing: $target/$item"
-        skill_files_ready=false
-        ready=false
-      fi
-    done
-    if [ "$skill_files_ready" = true ]; then
-      ok "skill files installed: $target"
-    fi
-    venv="$target/.venv/bin/python3"
-    if [ -n "$py" ] && python_supported "$py" && has_deps "$py"; then
-      ok "PyMuPDF and Pillow ready for $root (current Python)"
-    elif [ -n "$py" ] && python_supported "$py" && [ -x "$venv" ] && has_deps "$venv"; then
-      ok "PyMuPDF and Pillow ready for $root (private virtualenv)"
-    else
-      bad "PyMuPDF/Pillow missing or unsupported for $root — run: bash install.sh --agent <agent>"
-      ready=false
-    fi
+    check_args+=(--skill-dir "$root/$SKILL_NAME")
     IFS=$'\n'
   done
   IFS=$saved_ifs
 
-  if [ -n "${MINERU_TOKEN:-}" ]; then
-    ok "MinerU token: MINERU_TOKEN is set (validity not checked)"
-  elif token_file_secure; then
-    ok "MinerU token: $TOKEN_FILE (mode 600; validity not checked)"
-  elif [ -f "$TOKEN_FILE" ]; then
-    bad "MinerU token file must be a regular mode-600 file: $TOKEN_FILE"
-    ready=false
+  if status_output=$(bash "$SOURCE_DIR/scripts/check_setup.sh" "${check_args[@]}"); then
+    status_code=0
   else
-    bad "MinerU token missing (required) — run: bash install.sh --set-token"
-    ready=false
+    status_code=$?
   fi
-
-  head_ "Paper-reading readiness"
-  if [ "$ready" = true ]; then
-    ok "Skill, Python dependencies, and MinerU token are configured"
-  else
-    warn "Paper-reading setup is incomplete; resolve the items marked ✗ above"
-  fi
-
-  feishu_status
+  printf '%s\n' "$status_output"
+  case "$status_output" in
+    *"Feishu publishing is ready"*) FEISHU_READY=true ;;
+    *) FEISHU_READY=false ;;
+  esac
 
   head_ "Older installations"
   legacy_status
-  [ "$ready" = true ]
+  return "$status_code"
 }
 
 # ---------------------------------------------------------------- main

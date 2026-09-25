@@ -41,21 +41,17 @@ MinerU is a third-party service and `scripts/mineru_parse_pdf.sh` uploads the co
 
 ## Preflight before reading
 
-Before downloading or indexing a paper, check the whole setup once so the user does not reach
-the end of a read and only then discover a missing publisher or credential:
+Run `bash <skill-dir>/scripts/check_setup.sh` before downloading or indexing. It is the
+single source of truth for Skill files, Python dependencies, MinerU token configuration, and
+Feishu publishing readiness. Its exit status covers paper-reading requirements only; Feishu
+status is reported separately. Add `--skip-feishu` when the user requested local Markdown.
 
-- Confirm Python 3.9+ and that the Skill's PyMuPDF/Pillow scripts can run.
-- Confirm a MinerU token is available through `MINERU_TOKEN` or the secure token file above.
-- When Feishu is the requested/default destination, check `lark-cli`, its required
-  `lark-doc`/`lark-shared` guidance, and verified user authorization. If all three are ready,
-  skip setup. Otherwise keep any working CLI and repair only the missing guidance or app/login
-  steps using the official flow in `publishers/feishu.md` in this current Agent; do not ask the
-  user to submit a second prompt.
-- If the user requested local Markdown, Feishu CLI and login are not prerequisites.
-
-Resolve every step that does not need the user first. Then report any remaining action together
-(for example, creating a MinerU token or completing browser authorization) with the direct
-instructions. Do not download or upload a paper until the required setup and privacy checks pass.
+Stop before reading only when a paper-reading requirement is missing. Feishu CLI, guidance, or
+authorization problems do not block acquisition, MinerU parsing, or drafting. Resolve any part
+of the Feishu setup that does not need the user before the publish step. If a user action remains,
+continue the deep read: use local Markdown when Feishu was only the default destination, and
+defer only the Feishu publication when the user explicitly requested it. Never upload a
+non-public PDF to MinerU without explicit consent.
 
 ## Quick start
 
@@ -184,9 +180,11 @@ Load only the selected publisher:
 - Feishu: `publishers/feishu.md`
 - Local Markdown: `publishers/local-md.md`
 
-Publish text first and images second. Treat the figure manifest line
-`file | anchor | width | caption` as the durable write/publish contract. Its file path must
-resolve to the final high-resolution render or PDF crop inside `<paper-folder>`.
+For Feishu, write or overwrite the text body before inserting images because an overwrite
+removes previously inserted raster figures. For Local Markdown, write one complete `.md` file
+with its figures at their anchors. Treat the figure manifest line
+`file | anchor | width | caption` as the durable output contract for both backends. Its file
+path must resolve to the final high-resolution render or PDF crop inside `<paper-folder>`.
 
 Write Chinese punctuation full-width from the start (see `references/writing-style.md`
 "Chinese punctuation and mixed-language typography"). To normalize or audit a block's XML,

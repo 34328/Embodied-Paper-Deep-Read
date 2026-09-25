@@ -98,7 +98,7 @@ agent-driving notes; prefer them over this file when they disagree.
    - Default landing location is the user's **我的文档库 / My Library**. Do not create a new
      Feishu document without `--parent-position my_library` unless the user explicitly provides
      another folder/wiki parent.
-   - If authentication or required scopes are missing, follow "First-time setup" above: run
+   - If authentication or required scopes are missing, follow "Setup and readiness" above: run
      the official setup steps and start the browser authorization for the user. Continue after
      authorization succeeds. If setup cannot be completed, state the exact failed step. When
      Feishu was only the default destination, use local Markdown; when the user explicitly

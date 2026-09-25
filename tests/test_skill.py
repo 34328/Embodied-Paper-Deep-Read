@@ -139,8 +139,22 @@ class FigureTests(unittest.TestCase):
                 "caption": "图 1：测试图。",
             }]}, ensure_ascii=False), encoding="utf-8")
             figures.cmd_batch(str(pdf), str(spec), str(manifest), 1.0)
-            self.assertIn("images/figure.png", manifest.read_text(encoding="utf-8"))
+            written_manifest = manifest.read_text(encoding="utf-8")
+            self.assertIn("images/figure.png", written_manifest)
             self.assertGreaterEqual(fitz.Pixmap(str(out)).width, 1440)
+            with self.assertRaises(SystemExit):
+                figures.cmd_batch(str(pdf), str(spec), str(manifest), 1.0)
+            self.assertEqual(manifest.read_text(encoding="utf-8"), written_manifest)
+
+    def test_crop_manifest_flag_is_distinct_from_render_manifest_flag(self):
+        result = subprocess.run(
+            [sys.executable, str(SCRIPTS / "extract_figures.py"), "--help"],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("--manifest-out", result.stdout)
+        self.assertNotIn("--manifest ", result.stdout)
 
 
 class MineruCliTests(unittest.TestCase):
@@ -407,7 +421,7 @@ class InstallerTests(unittest.TestCase):
 
     def _run_status(self, tmp, *, auth_json=None, with_node_tools=False,
                     broken_node=False, broken_cli=False, missing_guidance=False,
-                    missing_skill_file=None):
+                    missing_skill_file=None, invocation="installer", skip_feishu=False):
         home = Path(tmp) / "home"
         skills = home / ".agents/skills"
         target = skills / "embodied-paper-deep-read"
@@ -458,8 +472,14 @@ class InstallerTests(unittest.TestCase):
         })
         env.pop("CODEX_HOME", None)
         env.pop("CLAUDE_CONFIG_DIR", None)
+        if invocation == "helper":
+            command = ["bash", str(target / "scripts/check_setup.sh")]
+            if skip_feishu:
+                command.append("--skip-feishu")
+        else:
+            command = ["bash", str(self.INSTALLER), "--check", "--dest", str(skills)]
         result = subprocess.run(
-            ["bash", str(self.INSTALLER), "--check", "--dest", str(skills)],
+            command,
             capture_output=True,
             text=True,
             cwd=str(ROOT),
@@ -468,8 +488,23 @@ class InstallerTests(unittest.TestCase):
         return result
 
     def test_syntax_is_valid(self):
-        result = subprocess.run(["bash", "-n", str(self.INSTALLER)], capture_output=True, text=True)
-        self.assertEqual(result.returncode, 0, result.stderr)
+        for script in (self.INSTALLER, SCRIPTS / "check_setup.sh"):
+            result = subprocess.run(["bash", "-n", str(script)], capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_installed_setup_helper_reports_feishu_without_blocking_readiness(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = self._run_status(tmp, invocation="helper")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("Paper-reading readiness", result.stdout)
+            self.assertIn("lark-cli is not installed", result.stdout)
+            self.assertNotIn("paper-reading is blocked", result.stdout.lower())
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = self._run_status(tmp, invocation="helper", skip_feishu=True)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("Feishu check skipped", result.stdout)
+            self.assertNotIn("lark-cli is not installed", result.stdout)
 
     def test_install_is_scoped_and_idempotent(self):
         with tempfile.TemporaryDirectory() as tmp:

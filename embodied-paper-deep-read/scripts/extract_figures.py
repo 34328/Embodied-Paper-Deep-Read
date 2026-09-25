@@ -136,6 +136,11 @@ def cmd_scan_all(pdf, out):
 
 
 def cmd_batch(pdf, spec_path, manifest_path, default_zoom):
+    if manifest_path and os.path.lexists(manifest_path):
+        sys.exit(
+            f"refusing to overwrite existing crop manifest: {manifest_path}; "
+            "choose a new --manifest-out path"
+        )
     with open(spec_path, encoding="utf-8") as handle:
         spec = json.load(handle)
     figures = spec.get("figures", spec) if isinstance(spec, dict) else spec
@@ -188,7 +193,7 @@ def cmd_batch(pdf, spec_path, manifest_path, default_zoom):
         caption = item.get("caption")
         if manifest_path and (not anchor or not caption):
             document.close()
-            sys.exit(f"batch item {position}: anchor and caption are required with --manifest")
+            sys.exit(f"batch item {position}: anchor and caption are required with --manifest-out")
         if manifest_path:
             manifest_dir = os.path.dirname(os.path.abspath(manifest_path))
             manifest_file = item.get("file") or os.path.relpath(os.path.abspath(out), manifest_dir)
@@ -200,7 +205,11 @@ def cmd_batch(pdf, spec_path, manifest_path, default_zoom):
     document.close()
     if manifest_path:
         os.makedirs(os.path.dirname(os.path.abspath(manifest_path)), exist_ok=True)
-        with open(manifest_path, "w", encoding="utf-8", newline="\n") as handle:
+        try:
+            handle = open(manifest_path, "x", encoding="utf-8", newline="\n")
+        except FileExistsError:
+            sys.exit(f"refusing to overwrite existing crop manifest: {manifest_path}")
+        with handle:
             handle.write("\n".join(manifest) + ("\n" if manifest else ""))
         print(f"manifest -> {manifest_path}")
 
@@ -217,13 +226,19 @@ def main():
     group.add_argument("--scan-all", metavar="OUT.json", help="inventory image bboxes/captions once")
     group.add_argument("--batch", metavar="SPEC.json", help="crop all entries in a JSON spec")
     parser.add_argument("--out", help="output PNG required with --auto/--rect")
-    parser.add_argument("--manifest", help="manifest output used with --batch")
+    parser.add_argument(
+        "--manifest-out",
+        dest="manifest_out",
+        help="new crop-manifest output for --batch; refuses to overwrite an existing file",
+    )
     parser.add_argument(
         "--zoom",
         type=float,
         help="override zoom (render defaults 1.0; crops/batch default 3.0)",
     )
     args = parser.parse_args()
+    if args.manifest_out and not args.batch:
+        parser.error("--manifest-out can only be used with --batch")
 
     page_mode = args.render or args.list or args.auto is not None or args.rect is not None
     if page_mode and args.page is None:
@@ -241,7 +256,7 @@ def main():
     elif args.scan_all:
         cmd_scan_all(args.pdf, args.scan_all)
     elif args.batch:
-        cmd_batch(args.pdf, args.batch, args.manifest, args.zoom or 3.0)
+        cmd_batch(args.pdf, args.batch, args.manifest_out, args.zoom or 3.0)
 
 
 if __name__ == "__main__":

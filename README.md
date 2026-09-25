@@ -83,7 +83,7 @@ bash install.sh --check --agent codex
 - **飞书发布**：`lark-cli`、必需的 CLI 指南和账号授权是否就绪。全部就绪时会明确显示“无需安装”。
 
 `--check` 的退出码表示“论文精读”基础条件是否就绪；飞书发布状态请看单独的状态项。
-`--check` 不会修改环境。MinerU Token 检查只验证本地配置与文件权限，不会验证 Token 是否仍有效；用一篇公开 arXiv 论文完成一次实际解析才能验证可用性，该操作会上传 PDF。[MinerU API 文档](https://mineru.net/apiManage/docs)列出单文件 200 MB、200 页的限制。
+`--check` 与 Skill 内置的 `scripts/check_setup.sh` 共用同一套检查逻辑，不会修改环境。Feishu CLI 未就绪不会阻止论文下载、解析或撰写；用户仅要求本地 Markdown 时可跳过发布端检查。MinerU Token 检查只验证本地配置与文件权限，不会验证 Token 是否仍有效；用一篇公开 arXiv 论文完成一次实际解析才能验证可用性，该操作会上传 PDF。[MinerU API 文档](https://mineru.net/apiManage/docs)列出单文件 200 MB、200 页的限制。
 
 ### 常见问题
 

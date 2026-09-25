@@ -174,9 +174,17 @@ Use the source reference described in `references/doc-structure.md`: arXiv when 
 otherwise an available DOI, publisher, or official project link. When no public URL exists,
 identify the source PDF without inventing a link.
 
-Before publishing, run the prose self-check in `writing-style.md` and the page-density check in
-`beautify.md` on the complete draft. Restructure dense passages before creating or overwriting
-the Feishu body, so later text edits do not force another image insertion pass.
+Save the exact body draft inside `<paper-folder>` (`<slug>_draft.xml` for Feishu; `<slug>.md`
+for Markdown), then run the prose self-check in `writing-style.md` and scan it:
+
+```bash
+python3 <skill-dir>/scripts/check_text_density.py --threshold 220 "<draft-path>"
+```
+
+The checker reports CJK-heavy paragraphs, list items, and table cells for review. Exit code 1
+means candidates need review, not automatic rejection: split unrelated content, or retain a long
+block when it carries one continuous argument. Do not publish until every reported block has
+been reviewed, and publish the exact reviewed draft. Keep the density rules in `beautify.md`.
 
 ### 4. Publish through one backend
 
@@ -213,8 +221,8 @@ ratios, latex, URLs, and version strings.
 - **Chinese prose uses Chinese punctuation.** In Chinese sentences, use `，`、`。`、`：`、`；`、`（ ）`、`“ ”`; reserve ASCII punctuation for code, commands, URLs, file paths, XML/HTML, LaTeX, JSON, exact titles, model/package names, and quoted source text. See `writing-style.md`.
 - Use real hierarchy rather than text walls; follow `writing-style.md`.
 - Review paragraphs over 220 Chinese characters and runs of three dense paragraphs using
-  `references/beautify.md`; restructure where the topic changes while preserving technical
-  claims, citations, conditions, and caveats.
+  `references/beautify.md` and `scripts/check_text_density.py`; restructure where the topic
+  changes while preserving technical claims, citations, conditions, and caveats.
 - On Feishu, use native heading sequences; never embed chapter numbers in H1/H2/H3 text.
 - Center all figures/whiteboards and make every table full-width with centered cells. Render
   loss functions and long equations as standalone centered display blocks.

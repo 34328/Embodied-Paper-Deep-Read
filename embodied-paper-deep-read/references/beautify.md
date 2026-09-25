@@ -57,9 +57,12 @@ the argument while retaining its technical detail.
 - Keep paragraphs, lists, tables, and figures in reading order. Avoid repeated callouts, bold
   labels at the start of every paragraph, and components that restate the same content.
 
-Before publishing, inspect the complete draft by section. Review every paragraph over 220
-Chinese characters and every run of three dense paragraphs. Split or restructure only where
-the thought changes; then check that citations, parameters, conditions, and caveats remain.
+Before publishing, run `scripts/check_text_density.py --threshold 220` on the exact Markdown or
+Feishu HTML/XML draft. It counts CJK characters in paragraphs, list items, and table cells, and
+prints each block over the review threshold. Review every reported block and every run of three
+dense paragraphs. A flagged continuous argument may remain intact after review; split or
+restructure where the thought changes, then confirm citations, parameters, conditions, and
+caveats remain. The checker never edits or shortens the draft.
 
 ## Figures and diagrams
 

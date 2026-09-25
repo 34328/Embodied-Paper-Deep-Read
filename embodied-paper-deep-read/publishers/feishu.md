@@ -93,10 +93,11 @@ agent-driving notes; prefer them over this file when they disagree.
 ## Publish workflow
 
 1. **Create / overwrite the text body first, figures second.**
-   - Before writing, review the complete draft with the prose and page-density checks in
-     `references/writing-style.md` and `references/beautify.md`. Treat paragraphs above 220
-     Chinese characters as a review trigger, and restructure long or parallel content before
-     publishing. Preserve all technical claims, evidence, citations, and caveats.
+   - Save the complete XML body as `<paper-folder>/<slug>_draft.xml`. Run
+     `python3 <skill-dir>/scripts/check_text_density.py --threshold 220 <draft.xml>` and
+     review each reported block with `references/writing-style.md` and `references/beautify.md`.
+     Restructure unrelated or parallel content before publishing; preserve all technical claims,
+     evidence, citations, and caveats. Publish the exact reviewed XML.
    - New doc: `lark-cli docs +create --parent-position my_library --content '<title>…</title>…'`
      (XML with `seq`/`seq-level` auto-numbering per `references/doc-structure.md`).
    - Default landing location is the user's **我的文档库 / My Library**. Do not create a new
@@ -155,6 +156,17 @@ agent-driving notes; prefer them over this file when they disagree.
    - every table spans the full usable width and every cell paragraph is centered;
    - every image/whiteboard is centered, and every long/loss formula is a standalone
      `align="center"` paragraph;
+   - after media placement, save one full XML fetch locally and run the density checker on its
+     JSON response, which extracts `data.document.content` without loading the whole body into
+     the working context:
+     ```bash
+     lark-cli docs +fetch --doc <id> --doc-format xml --format json \
+         > "<paper-folder>/<slug>_published.json"
+     python3 <skill-dir>/scripts/check_text_density.py --threshold 220 \
+         "<paper-folder>/<slug>_published.json"
+     ```
+     Compare every flagged block with the approved draft. If Feishu merged distinct paragraphs,
+     correct the body and verify again; a coherent long argument may remain after review;
    - every figure landed under the right heading with its
    caption. Inserted images render as **`<img … name=… caption=…>`** — grep for `<img`,
    NOT `<image>`, or you'll wrongly conclude zero images.

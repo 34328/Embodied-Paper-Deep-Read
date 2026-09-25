@@ -11,6 +11,7 @@ REQUIRED_SKILL_FILES="
   SKILL.md
   scripts/fetch_arxiv.py scripts/index_pdf.py scripts/mineru_parse_pdf.sh
   scripts/pdf_page_count.py scripts/render_figures.py scripts/extract_figures.py
+  scripts/check_text_density.py
   scripts/normalize_cjk_punct.py scripts/_pymupdf.py scripts/check_setup.sh
   references/reading-scope.md references/figure-extraction.md references/content-depth.md
   references/writing-style.md references/doc-structure.md references/beautify.md

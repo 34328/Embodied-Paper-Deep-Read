@@ -29,6 +29,7 @@ fetch = load_module("fetch_arxiv", SCRIPTS / "fetch_arxiv.py")
 figures = load_module("extract_figures", SCRIPTS / "extract_figures.py")
 render = load_module("render_figures", SCRIPTS / "render_figures.py")
 punct = load_module("normalize_cjk_punct", SCRIPTS / "normalize_cjk_punct.py")
+density = load_module("check_text_density", SCRIPTS / "check_text_density.py")
 
 
 class SkillMetadataTests(unittest.TestCase):
@@ -155,6 +156,54 @@ class FigureTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("--manifest-out", result.stdout)
         self.assertNotIn("--manifest ", result.stdout)
+
+
+class TextDensityTests(unittest.TestCase):
+    def test_threshold_is_a_review_trigger_only_above_220(self):
+        blocks = density.scan("字" * 220, "draft.md", "markdown")
+        self.assertEqual(len(density.CJK.findall(blocks[0][3])), 220)
+        self.assertFalse(any(len(density.CJK.findall(block[3])) > 220 for block in blocks))
+
+    def test_html_counts_visible_paragraph_once_and_skips_code(self):
+        long_text = "汉" * 221
+        source = f"<p>开头<strong>{long_text}</strong>结尾</p><pre><p>{long_text}</p></pre>"
+        blocks = density.scan(source, "draft.xml", "html")
+        self.assertEqual(len(blocks), 1)
+        self.assertEqual(len(density.CJK.findall(blocks[0][3])), 225)
+        self.assertEqual(blocks[0][1], 1)
+
+    def test_markdown_counts_wrapped_list_and_table_cells_but_skips_fences(self):
+        long_text = "数" * 221
+        source = (
+            "# Draft\n\n"
+            "- " + "项" * 110 + "\n  " + "续" * 111 + "\n\n"
+            "| 字段 | 内容 |\n| --- | --- |\n| 数据 | " + long_text + " |\n\n"
+            "```text\n" + long_text + "\n```\n"
+        )
+        blocks = density.scan(source, "draft.md", "markdown")
+        flagged = [block for block in blocks if len(density.CJK.findall(block[3])) > 220]
+        self.assertEqual([len(density.CJK.findall(block[3])) for block in flagged], [221, 221])
+        self.assertEqual([block[2] for block in flagged], ["list item", "table cell 2"])
+
+    def test_fetch_json_wrapper_scans_returned_document_xml(self):
+        content = "<p>" + "文" * 221 + "</p>"
+        payload = json.dumps({"ok": True, "data": {"document": {"content": content}}})
+        blocks = density.scan(payload, "published.json", "json")
+        self.assertEqual(len(blocks), 1)
+        self.assertEqual(len(density.CJK.findall(blocks[0][3])), 221)
+
+    def test_cli_reports_candidates_and_uses_review_exit_code(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            draft = Path(tmp) / "draft.md"
+            draft.write_text("甲" * 221, encoding="utf-8")
+            result = subprocess.run(
+                [sys.executable, str(SCRIPTS / "check_text_density.py"), str(draft)],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("1 of 1 text blocks", result.stdout)
+            self.assertIn(":1 paragraph: 221 CJK characters", result.stdout)
 
 
 class MineruCliTests(unittest.TestCase):
@@ -522,6 +571,7 @@ class InstallerTests(unittest.TestCase):
             self.assertTrue((installed / "SKILL.md").is_file())
             self.assertTrue((installed / "scripts/fetch_arxiv.py").is_file())
             self.assertTrue((installed / "scripts/_pymupdf.py").is_file())
+            self.assertTrue((installed / "scripts/check_text_density.py").is_file())
             self.assertTrue((installed / "references/writing-style.md").is_file())
             # Maintainer-only material must never ship into a user's skills directory.
             self.assertFalse((installed / "tests").exists())

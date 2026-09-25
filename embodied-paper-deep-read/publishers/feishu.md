@@ -93,6 +93,10 @@ agent-driving notes; prefer them over this file when they disagree.
 ## Publish workflow
 
 1. **Create / overwrite the text body first, figures second.**
+   - Before writing, review the complete draft with the prose and page-density checks in
+     `references/writing-style.md` and `references/beautify.md`. Treat paragraphs above 220
+     Chinese characters as a review trigger, and restructure long or parallel content before
+     publishing. Preserve all technical claims, evidence, citations, and caveats.
    - New doc: `lark-cli docs +create --parent-position my_library --content '<title>…</title>…'`
      (XML with `seq`/`seq-level` auto-numbering per `references/doc-structure.md`).
    - Default landing location is the user's **我的文档库 / My Library**. Do not create a new

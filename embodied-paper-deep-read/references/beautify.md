@@ -35,6 +35,32 @@ Feishu callout syntax (confirm exact attributes against the lark-doc embedded sk
   readable, centered, and not cramped.
 - Preserve sensible column ratios when scaling a table to full width.
 
+## Paragraph rhythm and page density
+
+Apply this to every chapter, not only results and discussion. Visual hierarchy should expose
+the argument while retaining its technical detail.
+
+- Give each paragraph one job: frame a question, explain a mechanism, interpret evidence, or
+  state a limitation. A normal paragraph is usually 2–4 sentences and about 80–180 Chinese
+  characters.
+- More than 220 Chinese characters is a review trigger, not an automatic cut-off. Split the
+  paragraph when it combines separate stages, parallel findings, several metrics, or a claim
+  with unrelated caveats. Keep one continuous causal argument together when splitting would
+  make its reasoning harder to follow.
+- Under an H2/H3, start with a short orientation, then use genuine subheadings, complete
+  explanatory bullets, a comparison table, or a process diagram for distinct parts. Three or
+  more consecutive dense paragraphs under one heading require restructuring or an explicit
+  reason to keep them as prose.
+- For a technical module, explain its purpose and mechanism in prose; use a table for repeated
+  fields such as module / input / output / role, and a diagram for sequence or branching. Follow
+  the visual with interpretation. Do not move essential explanations into a table alone.
+- Keep paragraphs, lists, tables, and figures in reading order. Avoid repeated callouts, bold
+  labels at the start of every paragraph, and components that restate the same content.
+
+Before publishing, inspect the complete draft by section. Review every paragraph over 220
+Chinese characters and every run of three dense paragraphs. Split or restructure only where
+the thought changes; then check that citations, parameters, conditions, and caveats remain.
+
 ## Figures and diagrams
 
 - Center every raster figure, attachment preview, and diagram/whiteboard. On Feishu, insert

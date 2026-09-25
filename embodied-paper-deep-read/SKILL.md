@@ -174,7 +174,9 @@ Use the source reference described in `references/doc-structure.md`: arXiv when 
 otherwise an available DOI, publisher, or official project link. When no public URL exists,
 identify the source PDF without inventing a link.
 
-Before publishing a chapter, run the layout self-check in `writing-style.md`.
+Before publishing, run the prose self-check in `writing-style.md` and the page-density check in
+`beautify.md` on the complete draft. Restructure dense passages before creating or overwriting
+the Feishu body, so later text edits do not force another image insertion pass.
 
 ### 4. Publish through one backend
 
@@ -210,6 +212,9 @@ ratios, latex, URLs, and version strings.
   unsupported material.
 - **Chinese prose uses Chinese punctuation.** In Chinese sentences, use `，`、`。`、`：`、`；`、`（ ）`、`“ ”`; reserve ASCII punctuation for code, commands, URLs, file paths, XML/HTML, LaTeX, JSON, exact titles, model/package names, and quoted source text. See `writing-style.md`.
 - Use real hierarchy rather than text walls; follow `writing-style.md`.
+- Review paragraphs over 220 Chinese characters and runs of three dense paragraphs using
+  `references/beautify.md`; restructure where the topic changes while preserving technical
+  claims, citations, conditions, and caveats.
 - On Feishu, use native heading sequences; never embed chapter numbers in H1/H2/H3 text.
 - Center all figures/whiteboards and make every table full-width with centered cells. Render
   loss functions and long equations as standalone centered display blocks.

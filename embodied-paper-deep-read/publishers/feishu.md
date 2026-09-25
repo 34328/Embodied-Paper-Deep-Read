@@ -96,8 +96,8 @@ agent-driving notes; prefer them over this file when they disagree.
    - Save the complete XML body as `<paper-folder>/<slug>_draft.xml`. Replace the path
      placeholders with their actual values, then run
      `python3 "<skill-dir>/scripts/check_text_density.py" --threshold 220 "<paper-folder>/<slug>_draft.xml"`
-     and review each reported block with `references/writing-style.md` and
-     `references/beautify.md`.
+     and review each reported long block or consecutive-prose candidate with
+     `references/writing-style.md` and `references/beautify.md`.
      Restructure unrelated or parallel content before publishing; preserve all technical claims,
      evidence, citations, and caveats. Publish the exact reviewed XML.
    - New doc: `lark-cli docs +create --parent-position my_library --content '<title>…</title>…'`
@@ -179,9 +179,10 @@ agent-driving notes; prefer them over this file when they disagree.
      python3 "<skill-dir>/scripts/check_text_density.py" --threshold 220 \
          "<paper-folder>/<slug>_published.json"
      ```
-     Compare every flagged block with the approved draft. If Feishu merged distinct paragraphs,
-     correct the body and verify again; a coherent long argument may remain after review.
-     An all-clear from this checker is only a block-length result.
+     Compare every flagged block or prose-wall run with the approved draft. If Feishu merged
+     distinct paragraphs, correct the body and verify again. A coherent, visually readable
+     section may remain as prose after rendered review; record that decision in the working
+     notes or publish state. Only a confirmed text wall that remains unresolved blocks completion.
    - every figure landed under the right heading with its
      caption. Inserted images render as **`<img … name=… caption=…>`** — grep for `<img`,
      NOT `<image>`, or you'll wrongly conclude zero images.
@@ -189,16 +190,19 @@ agent-driving notes; prefer them over this file when they disagree.
    Review every H2 as a reading unit in the exact source draft: each should make its technical
    point visible and distinguish parallel mechanisms, findings, or limits. In the rendered Feishu
    document, inspect the front matter, at least one substantive section per numbered chapter,
-   the densest sections, each table with explanatory text in its cells, and a dense figure at
-   their displayed sizes. For a short note, inspect every H2; for a long report, use the
-   full-document fetch to locate structurally dense passages, then verify their layout on the
-   rendered page. XML can expose long cells but cannot show how narrowly they wrap.
+   every rhythm candidate, the densest sections, each table with explanatory text in its cells,
+   and a dense figure at their displayed sizes. For a short note, inspect every H2; for a long
+   report, use the full-document fetch to locate structurally dense passages, then verify their
+   layout on the rendered page. XML can expose long cells but cannot show how narrowly they wrap.
    Explanatory cells and figure labels must be legible, not merely high-resolution on disk.
    Fix problems in the source draft, then update the affected blocks or republish the body;
-   reinsert figures after an overwrite as required by step 1. If the rendered page is
-   inaccessible, inspect an available local preview and state that Feishu visual verification
-   remains unconfirmed. XML structure and the density checker cannot establish visual
-   readability on their own.
+   reinsert figures after an overwrite as required by step 1.
+
+   Report **“visual verification passed”** only after inspecting the actual rendered Feishu page
+   or an equivalent faithful preview, including every rhythm candidate and the densest H2 in
+   each numbered H1. XML, outline, and checker results establish only **structural verification**.
+   If the rendered page is inaccessible, inspect any available local preview and explicitly say
+   **“Feishu visual verification unconfirmed”**; never claim the layout itself passed.
 
 ## Block ID lifecycle (don't reuse stale IDs)
 

@@ -65,13 +65,30 @@ the argument while retaining its technical detail.
   labels at the start of every paragraph, and components that restate the same content.
 
 Before publishing, run `scripts/check_text_density.py --threshold 220` on the exact Markdown or
-Feishu HTML/XML draft. It counts CJK characters in paragraphs, list items, and table cells, and
-prints each block over the review threshold. Review every reported block and every run of three
-dense paragraphs. A pass means no *single* checked block crossed the threshold; it does not
-clear a page of several shorter paragraphs, a cramped table, or generic translated prose.
-Inspect each H2 as a rendered reading unit and restructure parallel material where needed. A
-flagged continuous argument may remain intact after review; confirm citations, parameters,
-conditions, and caveats survive the change. The checker never edits or shortens the draft.
+Feishu HTML/XML draft. It checks two risks:
+
+- **Long block:** any paragraph, list item, table cell, blockquote, or callout over the
+  single-block threshold.
+- **Prose-wall run:** within one heading, a three-paragraph sliding window whose average is at
+  least 110 CJK characters and where at least two paragraphs contain 80 or more CJK characters.
+  Three consecutive top-level bold-lead paragraphs are also flagged regardless of length.
+
+Headings, lists, tables, callouts, blockquotes, display formulas, figures, and whiteboards break
+a prose run. Inline math does not. Overlapping windows merge into one candidate so a five-block
+wall is reported once rather than as three noisy warnings.
+
+Every candidate needs review before completion. Restructure parallel or separately
+scannable material with the least elaborate fitting form: complete bullets for parallel facts,
+a compact table for repeated fields, a real H3 for a sustained module, or a process diagram for
+multi-stage or branching flow. A candidate may remain as prose when it forms one coherent
+reading unit and the rendered section is visually readable. Record that decision in the working
+notes or publish state; do not add internal QA narration to the user-facing completion summary.
+The checker discovers risk but never chooses a component or edits the draft. Only a confirmed
+text wall that remains unresolved blocks completion.
+
+A clean exit is the structural rhythm gate, not proof of visual quality. Inspect each H2 as a
+rendered reading unit, including cramped tables and dense figures, and confirm citations,
+parameters, conditions, and caveats survive any restructuring.
 
 ## Figures and diagrams
 

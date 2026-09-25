@@ -198,11 +198,13 @@ for Markdown), then run the prose self-check in `writing-style.md` and scan it:
 python3 "<skill-dir>/scripts/check_text_density.py" --threshold 220 "<draft-path>"
 ```
 
-The checker reports CJK-heavy individual blocks for review. Exit code 1 means candidates need
-review, not automatic rejection: split unrelated content, or retain a continuous argument when
-its structure is clear. A clean exit does not detect shorter paragraphs stacked into a text
-wall and does not certify layout or synthesis; inspect sections and tables as reading units too.
-Publish the exact reviewed draft. Keep the density rules in `beautify.md`.
+The checker reports both CJK-heavy individual blocks and consecutive-prose rhythm candidates.
+Exit code 1 means the draft still needs review: restructure unrelated or parallel material, or
+retain a coherent reading unit after checking its rendered layout. Record that disposition in
+the working notes or publish state, not in the user-facing completion summary. A clean exit does
+not certify table wrapping, figure legibility, or synthesis; inspect sections and tables as
+reading units too. Publish the exact reviewed draft. Keep the density and rhythm rules in
+`beautify.md`.
 
 ### 4. Publish through one backend
 
@@ -244,9 +246,10 @@ ratios, latex, URLs, and version strings.
   unsupported material.
 - **Chinese prose uses Chinese punctuation.** In Chinese sentences, use `，`、`。`、`：`、`；`、`（ ）`、`“ ”`; reserve ASCII punctuation for code, commands, URLs, file paths, XML/HTML, LaTeX, JSON, exact titles, model/package names, and quoted source text. See `writing-style.md`.
 - Use real hierarchy rather than text walls; follow `writing-style.md`.
-- Review paragraphs over 220 Chinese characters and runs of three dense paragraphs using
-  `references/beautify.md` and `scripts/check_text_density.py`; restructure where the topic
-  changes while preserving technical claims, citations, conditions, and caveats.
+- Run the single-block density and consecutive-prose rhythm check on both the final draft and
+  final published artifact. Follow `references/beautify.md`: review every reported candidate,
+  restructure confirmed walls, and retain coherent, visually readable prose when that form
+  carries the argument better. A confirmed text wall that remains unresolved blocks completion.
 - On Feishu, use native heading sequences; never embed chapter numbers in H1/H2/H3 text.
 - Center all figures/whiteboards. On Feishu, make tables span the usable width; in both
   backends, center compact cell values and left-align explanatory text. Render loss functions

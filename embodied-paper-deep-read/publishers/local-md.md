@@ -77,6 +77,13 @@ edits made while placing figures:
 python3 "<skill-dir>/scripts/check_text_density.py" --threshold 220 "<paper-folder>/<slug>.md"
 ```
 
-Review each reported block. A result over 220 CJK characters is a review trigger, not an
-automatic cut-off; retain a longer block when it expresses one continuous argument. The
-checker does not edit the file.
+Review every reported long block and consecutive-prose candidate using
+`references/beautify.md`. Restructure parallel material; retain coherent, visually readable
+prose when it carries the argument better, and record that decision in the working notes. Only
+a confirmed text wall that remains unresolved blocks completion. The checker does not edit the
+file.
+
+Open at least one faithful rendered preview and inspect every rhythm candidate plus the densest
+H2 in each numbered H1. Only then report **“visual verification passed.”** If no renderer is
+available, report only **structural verification** and explicitly state that visual verification
+is unconfirmed.

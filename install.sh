@@ -23,7 +23,8 @@ TOKEN_FILE="$HOME/.mineru_token"
 FEISHU_READY=false
 
 # Directory contents this installer refreshes. The private dependency venv and
-# any files outside this list are left alone.
+# user files outside this list are left alone; stale maintainer-only tests are
+# removed explicitly in install_to().
 MANAGED_DIRS="scripts references publishers agents"
 MANAGED_FILES="SKILL.md LICENSE requirements.txt requirements-dev.txt"
 DEST=""
@@ -153,6 +154,9 @@ install_to() {
   local target="$root/$SKILL_NAME"
   local item
   mkdir -p "$target"
+  # Maintainer tests must never live in a user's installed Skill. Remove copies
+  # left by older development installs before refreshing the managed files.
+  rm -rf "$target/tests"
   for item in $MANAGED_DIRS; do
     rm -rf "$target/$item"
     if [ -d "$SOURCE_DIR/$item" ]; then

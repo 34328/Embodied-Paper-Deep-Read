@@ -202,7 +202,8 @@ class TextDensityTests(unittest.TestCase):
                 text=True,
             )
             self.assertEqual(result.returncode, 1)
-            self.assertIn("1 of 1 text blocks", result.stdout)
+            self.assertIn("1 long block(s) and 0 prose-wall run(s)", result.stdout)
+            self.assertIn("LONG ", result.stdout)
             self.assertIn(":1 paragraph: 221 CJK characters", result.stdout)
 
 
@@ -558,7 +559,11 @@ class InstallerTests(unittest.TestCase):
     def test_install_is_scoped_and_idempotent(self):
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp) / "skills"
-            for _ in range(2):
+            for iteration in range(2):
+                if iteration == 1:
+                    stale_tests = dest / "embodied-paper-deep-read" / "tests"
+                    stale_tests.mkdir(parents=True)
+                    (stale_tests / "maintainer_only.py").write_text("stale\n", encoding="utf-8")
                 result = subprocess.run(
                     ["bash", str(self.INSTALLER), "--dest", str(dest), "--skip-deps"],
                     capture_output=True,

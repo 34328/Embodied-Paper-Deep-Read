@@ -25,22 +25,25 @@ Dense notes often develop one of two layout problems:
   Common in 实验结果 / 讨论 sections.
 
 When a block contains parallel or sequenced items (multiple gaps, stages, findings,
-or failure modes), a framing sentence followed by a list often exposes the
-structure. Each item should be a complete explanation. Keep flowing paragraphs
-for a continuous argument such as motivation, a causal chain, or synthesis.
+or failure modes), use a framing sentence followed by a list. Each item should be a
+complete explanation. Keep flowing paragraphs for a continuous argument such as
+motivation, a causal chain, or synthesis.
 
-### Layout decisions
+### Hard rules for paragraph structure
 
-1. Three or more consecutive bold-lead paragraphs usually signal parallel items
-   that would read better as a list. If they are genuinely separate arguments,
-   give them their own paragraphs or subheadings. For parallel items, convert to:
+1. **Never place three or more bold-lead paragraphs in a row.** If they enumerate
+   parallel items, convert them to a framing sentence plus a list. If they are distinct
+   arguments, use genuine subheadings or ordinary paragraphs without repeated bold leads.
+   For parallel items, use:
    `<p>` framing sentence + `<ul><li><b>标签:</b> 完整解释…</li>…</ul>`.
-2. Give each paragraph one coherent argument. A conclusion, its decisive number,
-   and a necessary caveat may belong together; split when setup, mechanisms,
-   multiple findings, and failure modes become unrelated strands.
-3. Avoid nested bold leads inside one paragraph (e.g. a bold "Phase 1" lead whose
-   body then bolds "静态路由"). Use a subheading or a list when there are real
-   subtopics; leave ordinary emphasis in prose when it clarifies a single point.
+2. Give each paragraph one coherent argument. A claim, its decisive number, citation,
+   and directly related caveat may stay together. Split a paragraph that piles setup,
+   mechanism, multiple results, failure analysis, and limitations into one block.
+3. **Never nest a second bold lead inside a bold-lead paragraph.** Use a real subheading
+   or list for subtopics; use ordinary emphasis only where it clarifies the same point.
+4. Continuous prose usually works best at 2–4 sentences per paragraph. Use the
+   paragraph-density review in `beautify.md` for long blocks; do not split a continuous
+   causal argument into disconnected fragments just to meet a character count.
 
 ### Prose-vs-points decision test
 
@@ -49,8 +52,10 @@ argument?*
 - **Parallel / sequenced** (三条鸿沟、两个 phase、四类 VQA、一组失败模式、三点结论) → **list**,
   one framing sentence above it. This is the default for "结果 / 讨论 / 局限" content.
 - **Continuous** (为什么现有方法不行 → 所以本文这样做;一条因果链;一段综述) → **prose**,
-  with the reasoning and necessary evidence kept together.
-- For enumerable content, prefer a list when it makes the relation among items clearer.
+  with the reasoning and necessary evidence kept together, usually 2–4 sentences per paragraph.
+- When it is unclear whether content is enumerable, prefer a list if the items have distinct
+  conditions, mechanisms, or outcomes. Keep prose when the reader needs one uninterrupted
+  causal explanation.
 
 ### Worked example (this is the exact mistake to avoid)
 
@@ -89,12 +94,15 @@ failure-mode inventories.
 
 ### Open with the issue, then develop the evidence
 
-Sections that stay as prose (问题定义、动机、综述引言) should open with a clear
+Sections that stay as prose (问题定义、动机、综述引言) should open with a short
 statement of the issue before the detailed evidence.
 
-- Start with a short statement of the problem or finding, then develop its mechanism,
-  evidence, and qualification. Paragraph length follows the argument; split a dense
-  block without deleting distinct technical claims or necessary context.
+- **The first paragraph under a section should state its point in 1–2 sentences.** Then
+  develop the mechanism, evidence, and qualification in following paragraphs or structured
+  blocks. Do not front-load several long setup paragraphs before stating the section's claim.
+- Paragraph length follows the argument; split a dense block at changes in idea without
+  deleting distinct technical claims or necessary context. Use the character-count review in
+  `beautify.md` as a warning gate, not a target for deleting content.
 - Remove repeated context and unsupported qualifiers. Prefer concrete, scoped claims
   over claims that a method is "本质上" limited or that one factor is the sole "根源".
 

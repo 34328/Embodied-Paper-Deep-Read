@@ -72,10 +72,10 @@ the thought changes; then check that citations, parameters, conditions, and cave
 
 ## Results / discussion / limitations: structure every section for scanning
 
-These sections can collapse into text walls (a 300–400 字 paragraph per finding, or
-a bold-lead run). When a result, discussion, or limitation section contains 2+
-parallel findings, conditions, comparisons, or failure modes, adapt the pattern
-below. If the section is a single continuous argument, keep it as prose.
+These sections are especially prone to text walls, including one 300–400 字 paragraph
+for each finding or a run of bold-lead paragraphs. When a result, discussion, or limitation
+section contains two or more parallel findings, conditions, comparisons, or failure modes,
+use the pattern below. A single continuous argument can stay as connected prose.
 
 **Scannable skeleton for parallel findings:**
 1. One **framing sentence**: what this experiment asks and the headline verdict.
@@ -87,9 +87,9 @@ below. If the section is a single continuous argument, keep it as prose.
    paragraph.
 4. Optional one-line takeaway.
 
-Several task-by-task comparisons usually read better as a **list** or table than
-as a single paragraph. Group reported failure modes in a list when that makes
-their conditions and differences easier to compare.
+Three task-by-task comparisons belong in a **list** or table, not one paragraph. Group
+reported failure modes in a list so their conditions and differences are explicit. Keep a
+single continuous result as 2–4 sentence paragraphs; do not force it into a list.
 
 **Highlight the key result, sparingly.** At most one accent per result section:
 - a central row of the results table (light-blue + bold), when the metric and

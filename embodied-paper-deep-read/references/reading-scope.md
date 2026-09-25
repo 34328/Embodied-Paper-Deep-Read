@@ -52,8 +52,8 @@ verify an otherwise usable MinerU passage but cannot replace a missing or unusab
    central focus is model类 or data类, then inventory every reported technical area: model/system
    design, data sources and processing, training, evaluation/benchmark protocol, real-world or
    system tests, safety/deployment, failures, and limitations. Record section ranges and, where
-   possible, corresponding PDF pages. Treat “technical report” as a document format; do not use
-   it to narrow the coverage inventory.
+   possible, corresponding PDF pages. Treat “technical report” and “survey/review” as document
+   formats; use the latter to map taxonomy and cited studies without narrowing coverage.
 2. **Collect evidence by topic.** Read relevant Markdown sections for each inventoried area,
    including supporting contributions outside the selected category, plus relevant appendix
    details. Use bounded slices of roughly 8–12k extracted characters. Summarize each slice
@@ -87,11 +87,13 @@ METHOD — factorized decoder — PDF pp. 5–6 (printed pp. 3–4)
 Distinguish zero-based tool indexes, one-based PDF pages, and printed paper pages. Use `PDF p.`
 as the required locator and add `printed p.` when it differs.
 
-Include motivation, contributions, related-work groups, method, tensors/hyperparameters,
-datasets, training, decisive results, ablations, limitations, appendix evidence, and figure/
-table candidates. Attach page numbers to every numerical or architecture claim; when only
-MinerU Markdown evidence is available, mark it as `md section: ...` and verify before final
-publishing.
+Include motivation, contributions, related-work groups, limitations, appendix evidence, and
+figure/table candidates. For an original study, capture its reported method, dimensions,
+datasets, training, decisive results, and ablations. For a survey, capture its classification
+axes, representative named mechanisms and protocols, comparison dimensions, cited evidence,
+and gaps in comparability; do not imply that cited results are the survey authors' experiments.
+Attach page numbers to every numerical or architecture claim; when only MinerU Markdown
+evidence is available, mark it as `md section: ...` and verify before final publishing.
 
 Related work means the methods or families the authors actually discuss in Related Work or
 use as meaningful baselines. Group them by topic; do not enumerate every bibliography entry.

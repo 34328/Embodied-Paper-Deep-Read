@@ -51,7 +51,7 @@ Before writing any block, ask: *are these items parallel/enumerable, or is this 
 argument?*
 - **Parallel / sequenced** (三条鸿沟、两个 phase、四类 VQA、一组失败模式、三点结论) → **list**,
   one framing sentence above it. This is the default for "结果 / 讨论 / 局限" content.
-- **Continuous** (为什么现有方法不行 → 所以本文这样做;一条因果链;一段综述) → **prose**,
+- **Continuous** (为什么现有方法不行 → 所以本文这样做;一条因果链) → **prose**,
   with the reasoning and necessary evidence kept together, usually 2–4 sentences per paragraph.
 - When it is unclear whether content is enumerable, prefer a list if the items have distinct
   conditions, mechanisms, or outcomes. Keep prose when the reader needs one uninterrupted
@@ -91,6 +91,21 @@ failure-mode inventories.
   matters), never a keyword fragment. Bullet-shrapnel (标题式碎词) is as wrong as the walls.
 - The top **精华提炼** callout follows the same list discipline: one conclusion sentence + 3–5
   parallel bullets.
+
+### Synthesis, not paragraph-by-paragraph translation
+
+For every major H2, lead with the specific point the reader should retain, then select the
+source facts needed to establish it. Do not follow the paper's paragraph order merely to
+restate it in Chinese. Where the source compares approaches, give the reader the comparison:
+**named example → mechanism or protocol → distinguishing tradeoff → supporting evidence or
+boundary**. Close with a short inference only when the evidence warrants one, and label it as
+this reading's inference rather than the authors' result.
+
+Before accepting a section, scan its blocks: if it contains two or more families, criteria,
+failure modes, or stages but only consecutive prose paragraphs, turn the parallel parts into
+complete bullets or a comparison table. Keep the causal explanation that connects them in
+short prose. A section made of generic category definitions without representative methods or
+evidence has not yet been analyzed deeply enough.
 
 ### Open with the issue, then develop the evidence
 

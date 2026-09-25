@@ -28,11 +28,11 @@ Feishu callout syntax (confirm exact attributes against the lark-doc embedded sk
 - Highlight one row only when it carries the table's central comparison: the
   source's method or the best result supported by the reported metric. Do not style
   the source's method as the winner if it does not lead on that metric.
-- **Every table should read as full-width and centered on Feishu:** set every `<th>/<td>` child
-  paragraph to `align="center"`, and use a sensible `colgroup` that spans the available width.
-  If a reliable document width can be fetched, scale to it; otherwise use stable proportional
-  widths. Do not spend extra iterations chasing pixel-perfect width when the table is already
-  readable, centered, and not cramped.
+- **Every table should span the usable width on Feishu.** Center headers and short numeric or
+  categorical values; left-align multi-line explanatory cells so mechanisms and caveats are
+  readable. Give explanatory columns enough width with a sensible `colgroup`. If a long-text
+  table is still cramped, split it by theme or use explanatory bullets instead of shrinking
+  the text. Do not spend extra iterations chasing pixel-perfect width when it reads well.
 - Preserve sensible column ratios when scaling a table to full width.
 
 ## Paragraph rhythm and page density
@@ -60,9 +60,11 @@ the argument while retaining its technical detail.
 Before publishing, run `scripts/check_text_density.py --threshold 220` on the exact Markdown or
 Feishu HTML/XML draft. It counts CJK characters in paragraphs, list items, and table cells, and
 prints each block over the review threshold. Review every reported block and every run of three
-dense paragraphs. A flagged continuous argument may remain intact after review; split or
-restructure where the thought changes, then confirm citations, parameters, conditions, and
-caveats remain. The checker never edits or shortens the draft.
+dense paragraphs. A pass means no *single* checked block crossed the threshold; it does not
+clear a page of several shorter paragraphs, a cramped table, or generic translated prose.
+Inspect each H2 as a rendered reading unit and restructure parallel material where needed. A
+flagged continuous argument may remain intact after review; confirm citations, parameters,
+conditions, and caveats survive the change. The checker never edits or shortens the draft.
 
 ## Figures and diagrams
 

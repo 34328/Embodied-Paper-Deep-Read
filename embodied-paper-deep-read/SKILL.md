@@ -125,6 +125,8 @@ for the argument and every material technical contribution, including supporting
 and relevant appendix evidence. Map each to a final document chapter; use
 `references/reading-scope.md`, `references/doc-structure.md`, and `references/content-depth.md`
 to inventory, classify, and assess the source without dropping secondary technical content.
+Record whether the source is a primary paper, technical report, or survey/review; this format
+changes how chapters 2–3 present mechanisms and evidence, not the two focus categories.
 
 ### 2. Inventory and extract figures
 
@@ -172,7 +174,10 @@ Read all four phase-3 references before drafting:
 Draft one chapter at a time from `<slug>_evidence.md`. Reopen only the Markdown section,
 cited page, or PDF view needed to verify numbers, dimensions, or ambiguous claims. Keep the
 evidence notes and figure manifest as restartable checkpoints; do not retain all raw page text
-in the working context.
+in the working context. Before publication, compare the source-wide evidence inventory with
+the finished draft: every material mechanism, representative method family, benchmark, result,
+and limitation must have a concrete explanation at a named location. Revise a generic summary
+that merely restates the source's prose instead of making its technical distinctions clear.
 
 Use the source reference described in `references/doc-structure.md`: arXiv when available,
 otherwise an available DOI, publisher, or official project link. When no public URL exists,
@@ -187,8 +192,9 @@ python3 "<skill-dir>/scripts/check_text_density.py" --threshold 220 "<draft-path
 
 The checker reports CJK-heavy paragraphs, list items, and table cells for review. Exit code 1
 means candidates need review, not automatic rejection: split unrelated content, or retain a long
-block when it carries one continuous argument. Do not publish until every reported block has
-been reviewed, and publish the exact reviewed draft. Keep the density rules in `beautify.md`.
+block when it carries one continuous argument. A clean exit does not certify the layout or
+quality of synthesis; inspect consecutive shorter paragraphs and tables as reading units too.
+Publish the exact reviewed draft. Keep the density rules in `beautify.md`.
 
 ### 4. Publish through one backend
 
@@ -210,8 +216,10 @@ ratios, latex, URLs, and version strings.
 
 ## Completion checks
 
-- Cover the paper's argument, main method, decisive experiments, limitations, and relevant
-  appendix material.
+- Cover the source's argument, limitations, and relevant appendix material. For an original
+  study, explain its method and decisive experiments. For a survey, explain its taxonomy,
+  representative mechanisms, cited evidence, and limits of cross-study comparison. Include
+  training, experiments, or ablations only when the source actually reports them.
 - Use one of the two categories in `references/doc-structure.md` as the organizing path, and
   include every material model, data, evaluation, system, safety, or deployment contribution
   reported in the source, whether primary or secondary.
@@ -228,8 +236,9 @@ ratios, latex, URLs, and version strings.
   `references/beautify.md` and `scripts/check_text_density.py`; restructure where the topic
   changes while preserving technical claims, citations, conditions, and caveats.
 - On Feishu, use native heading sequences; never embed chapter numbers in H1/H2/H3 text.
-- Center all figures/whiteboards and make every table full-width with centered cells. Render
-  loss functions and long equations as standalone centered display blocks.
+- Center all figures/whiteboards. On Feishu, make tables span the usable width; in both
+  backends, center compact cell values and left-align explanatory text. Render loss functions
+  and long equations as standalone centered display blocks.
 - **Publish figures at ~2× their display width, never above their pixel width.** Use
   `render_figures.py` when MinerU supplies a usable `layout.json` box; otherwise use a
   high-resolution PDF crop from `extract_figures.py`. Inspect the figure against the source PDF,

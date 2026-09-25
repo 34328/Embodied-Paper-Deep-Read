@@ -35,14 +35,40 @@ in the source: model/system design; data sources and processing; training; exper
 benchmark protocol; real-world/system evaluation; safety, privacy, or deployment; and
 limitations/failures. For each material item, capture the steps or mechanism, consequential
 choices and parameters, rationale when stated, evidence and outcome, limitations, and page
-locators. Map it to a final chapter before drafting. Do not add empty headings for absent
-content.
+locators. Map it to a final chapter before drafting. After drafting, compare this inventory
+against the actual note: every material item needs a named location and a concrete explanation,
+not just an H2 title or one catchall sentence. Reopen the source for any unexplained item.
+Do not add empty headings for absent content.
 
 Match detail to the source's technical density, not its label as a paper or report. For a dense
 report, organize related details into compact tables and process diagrams, while explaining
 the choices and consequences in prose. For a shorter paper, preserve the same coverage standard
 without padding. Summarize repeated or peripheral details, but retain every material technical
 claim, condition, caveat, and causal link.
+
+## Surveys: explain the approaches, then synthesize
+
+For a survey or review, the authors' taxonomy and synthesis are its own contributions; the
+individual methods, datasets, benchmarks, and results it discusses belong to cited studies.
+Identify the major axes of the survey first. For each substantive family, include at least one
+named representative that the source discusses, then explain its mechanism or protocol, the
+problem it addresses, its constraint or failure mode, and what evidence supports that reading.
+Add more representatives where different designs produce a meaningful contrast. Do not list
+every bibliography entry or substitute a string of names for technical explanation.
+
+Compare families on shared, decision-useful dimensions (for example, memory carrier, read/write
+operation, updateability, compute budget, and failure mode), using a compact table when it
+improves scanning. State the synthesis *after* the comparison: where the approaches differ,
+which tradeoff matters, and what cannot be compared because protocols or tasks differ. For a
+benchmark survey, explain what each representative task tests, which historical information is
+hidden or exposed, and what a score can and cannot establish. Cite the survey page containing
+the classification or the cited result/table; identify the underlying study by name when
+attributing its result.
+
+Do not spend the available detail budget on rephrasing the introduction, repeating definitions,
+or listing dataset sizes without their diagnostic purpose. A deep-read should let the reader
+reconstruct why a representative approach works, when to prefer it, and how the evidence limits
+that choice.
 
 ## Methods need real dimensions
 

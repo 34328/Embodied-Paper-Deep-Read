@@ -14,12 +14,11 @@ There are exactly two top-level reading categories:
   curation pipeline, data governance, or a benchmark and its evaluation protocol. Benchmarks
   are part of this category, not a third category.
 
-“Technical report” describes a document format, not a reading category. A report may contain
-model design, data pipelines, evaluation, robot or system integration, safety, and deployment
-in one source. Select the category whose research object best matches the central claim and
-strongest evidence, record the other material contributions, and cover every technically
-material area the source actually reports. The selected category sets emphasis; it never
-removes a reported pipeline, model, experiment, or system result from the note.
+“Technical report” and “survey/review” describe document formats, not reading categories.
+Either may cover model design, data pipelines, evaluation, robot or system integration, safety,
+and deployment in one source. Choose the category that best matches the central claim and
+strongest evidence. It sets emphasis; it never removes a material pipeline, model, experiment,
+or system result from the note.
 
 Before drafting, make a compact source-wide coverage inventory in `<slug>_evidence.md` and map
 each material contribution to a final chapter. Apply the coverage and evidence-detail criteria
@@ -28,8 +27,9 @@ stage or parameter.
 
 ## Shared five-chapter spine
 
-Use this chapter order for both categories. Keep the five-chapter structure stable; adapt the
-subsections so the central object and every material secondary contribution are explained.
+Use this chapter order and these chapter functions for both categories. Keep five numbered
+chapters; adapt the subsections to the source. For a survey, chapters 2–3 may use the titles
+given in "Surveys and reviews" below to reflect synthesis rather than original experiments.
 
 - **论文基本信息** — *front matter, unnumbered.* A table: 标题 / 作者 / 机构 / 发布
   (arXiv id + date, when available) / 项目主页 (when available) / 研读类别（模型类或数据类）.
@@ -88,6 +88,30 @@ robot evaluation, and deployment; a data report may need a detailed account of t
 to establish downstream value. Do not compress such content into a passing sentence or omit it
 because it is not the primary contribution. Allocate detail by technical importance and
 evidence, not by paper genre or equal word count.
+
+### Surveys and reviews within either category
+
+Keep the same five numbered chapters and choose 模型类 or 数据类 by the subject being surveyed.
+Do not describe a survey's taxonomy as a newly proposed model, or its cited works as the
+survey authors' experiments. When the survey has no original method or common experiment,
+use the chapter 2–3 titles below instead of the original-study titles above. Adapt the internal
+sections to the evidence:
+
+- **1 研究背景与动机** — the unresolved problem and the survey's own organizing question;
+  explain gaps in prior reviews or terminology only when the source identifies them.
+- **2 方法谱系与技术机制** (or **数据与评测谱系** for a data-focused survey) — the survey's
+  classification axes and the substantive families under them. Explain representative named
+  approaches, how each works, what it preserves or measures, and the tradeoff that separates
+  it from neighboring approaches. Give a major axis its own H2/H3 when needed; do not flatten
+  several axes into one general-definition paragraph.
+- **3 证据、评测与比较** — what the cited studies and benchmarks actually show, which
+  comparisons share a protocol, and what remains untested. Distinguish source-work results
+  from the survey authors' synthesis. A landscape or scale table is not an experiment ranking.
+- **4 局限性与适用边界** and **5 结论与意义** — separate the survey's stated open problems from
+  this reading's assessment, then explain which research choices the synthesis supports.
+
+If the survey has no original training run or common evaluation, say so once where it affects
+interpretation; spend the rest of the space on concrete cited mechanisms and evidence.
 
 “核心创新” is not a mandatory subsection. Surface a genuine distinctive idea in its relevant
 section or a concise callout; do not manufacture one. If the source lacks a subsection, fold it

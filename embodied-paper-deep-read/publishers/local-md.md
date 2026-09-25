@@ -41,7 +41,8 @@ Write a single `.md` file plus a figures folder inside the paper folder required
   ```
 - **Tables** → GitHub-flavored Markdown tables. Bold the paper's own method when it is the
   comparison focus, or the actual winning row when that is the claim; do not equate the two.
-  Center every column via `:---:`.
+  Center short numeric or categorical columns via `:---:`; left-align explanatory columns via
+  `:---`. If a long-text table is cramped, split it by theme or use explanatory bullets.
 - **Math / tensor dims** → `$…$` inline LaTeX instead of `<latex>`:
   `$\mathbb{R}^{1024 \times H/14 \times W/14}$`.
 - **Mermaid pipeline** → a fenced ` ```mermaid ` block (renders on GitHub/many viewers).

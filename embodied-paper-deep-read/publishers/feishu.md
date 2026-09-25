@@ -147,18 +147,22 @@ agent-driving notes; prefer them over this file when they disagree.
      `--file` for on-disk crops.
    - media-insert prints progress lines to stdout — **grep for the block id**, don't feed
      the stream to `json.load`.
-   - Always pass `--align center`. Give tables centered cell paragraphs and a full-width
-     appearance. Derive the usable width from a fetched full-width/auto-layout table when one
-     exists; otherwise use stable proportional column widths as in `references/beautify.md`.
+   - Always pass `--align center` for figures. Give tables a full-width appearance; center
+     headers and compact values, but left-align explanatory cells that wrap across lines.
+     Derive the usable width from a fetched full-width/auto-layout table when one exists;
+     otherwise use stable proportional column widths as in `references/beautify.md`.
      All display formulas must be standalone centered paragraphs.
 
-4. **Verify once after all moves.** Re-fetch the outline and affected sections. Confirm that:
+4. **Verify once after all moves.** Re-fetch the outline and affected sections. Use
+   `--detail full` when checking colors, widths, alignment, or other styles: the default
+   simple fetch omits these attributes. Confirm that:
    - every numbered H1/H2/H3 has `seq` + `seq-level="auto"` in a targeted `--detail full` fetch;
    - heading text has no hand-written numeric prefix (`2 方法`, `2.1 网络架构`, etc.);
    - the five numbered H1 chapters have exactly four native `<hr/>` separators, only between
      chapters 1–2, 2–3, 3–4, and 4–5; there are none within a chapter or around front matter
      and the source section;
-   - every table spans the full usable width and every cell paragraph is centered;
+   - every table spans the full usable width, with readable column widths and alignment
+     appropriate to cell content;
    - every image/whiteboard is centered, and every long/loss formula is a standalone
      `align="center"` paragraph;
    - after media placement, save one full XML fetch locally and run the density checker on its
@@ -166,16 +170,25 @@ agent-driving notes; prefer them over this file when they disagree.
      the working context. Replace `<id>` and path placeholders with the actual document ID and
      paths:
      ```bash
-     lark-cli docs +fetch --doc "<id>" --doc-format xml --format json \
+     lark-cli docs +fetch --doc "<id>" --doc-format xml --detail full --format json \
          > "<paper-folder>/<slug>_published.json"
      python3 "<skill-dir>/scripts/check_text_density.py" --threshold 220 \
          "<paper-folder>/<slug>_published.json"
      ```
      Compare every flagged block with the approved draft. If Feishu merged distinct paragraphs,
-     correct the body and verify again; a coherent long argument may remain after review;
+     correct the body and verify again; a coherent long argument may remain after review.
+     An all-clear from this checker is only a block-length result.
    - every figure landed under the right heading with its
-   caption. Inserted images render as **`<img … name=… caption=…>`** — grep for `<img`,
-   NOT `<image>`, or you'll wrongly conclude zero images.
+     caption. Inserted images render as **`<img … name=… caption=…>`** — grep for `<img`,
+     NOT `<image>`, or you'll wrongly conclude zero images.
+
+   Finally, scan the rendered Feishu document H2 by H2 for a visible conclusion and readable
+   parallel distinctions. Inspect the longest table and a dense figure at their displayed sizes:
+   explanatory cells and figure labels must be legible, not merely high-resolution on disk.
+   Fix text walls or cramped tables in the source draft, then republish text and reinsert figures
+   as required by step 1. If the rendered page is inaccessible, inspect an available local
+   preview and state that Feishu visual verification remains unconfirmed. XML structure and the
+   density checker cannot establish visual readability on their own.
 
 ## Block ID lifecycle (don't reuse stale IDs)
 
